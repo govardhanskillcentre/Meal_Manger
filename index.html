@@ -1,0 +1,2644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GSC Student Manager — Dashboard &amp; Reports</title>
+  <style>
+    :root {
+      --bg: #f4f7fb;
+      --surface: #ffffff;
+      --surface-2: #f8fafc;
+      --border: #e2e8f0;
+      --text: #0f172a;
+      --muted: #64748b;
+      --primary: #1d4ed8;
+      --primary-hover: #1e40af;
+      --primary-soft: #eff6ff;
+      --green: #15803d;
+      --green-soft: #dcfce7;
+      --red: #b91c1c;
+      --red-soft: #fee2e2;
+      --boy: #1d4ed8;
+      --boy-soft: #dbeafe;
+      --girl: #be185d;
+      --girl-soft: #fce7f3;
+      --radius: 14px;
+      --shadow: 0 2px 10px rgba(15, 23, 42, 0.05);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.45;
+    }
+
+    /* Simple, clean, highly readable font for Student Names everywhere */
+    .student-name {
+      font-family: Arial, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+      font-size: 15px;
+      font-weight: 500;
+      color: #1e293b;
+      letter-spacing: 0.01em;
+      line-height: 1.35;
+    }
+
+    .student-id {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 12.5px;
+      color: var(--primary);
+      font-weight: 600;
+    }
+
+    /* Inline Clipart Icons */
+    .clipart {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      vertical-align: middle;
+    }
+
+    .clipart-lg { width: 42px; height: 42px; }
+    .clipart-md { width: 28px; height: 28px; }
+    .clipart-sm { width: 20px; height: 20px; }
+
+    /* Topbar */
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 18px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      box-shadow: 0 1px 4px rgba(15, 23, 42, 0.04);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #1d4ed8, #3b82f6);
+      color: #fff;
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: 17px;
+      font-weight: 700;
+    }
+
+    .brand-sub {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .topbar-actions {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .sync-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      color: var(--muted);
+    }
+
+    .sync-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #94a3b8;
+    }
+
+    .sync-pill.ok .sync-dot { background: #16a34a; }
+    .sync-pill.ok { color: var(--green); background: #f0fdf4; border-color: #bbf7d0; }
+    .sync-pill.err .sync-dot { background: #dc2626; }
+    .sync-pill.err { color: var(--red); background: #fef2f2; border-color: #fecaca; }
+    .sync-pill.busy .sync-dot { background: #2563eb; animation: pulse 1s infinite; }
+    .sync-pill.busy { color: var(--primary); background: var(--primary-soft); border-color: #bfdbfe; }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.8); }
+    }
+
+    button, input, select { font: inherit; }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 8px 14px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .btn:hover { background: var(--surface-2); }
+    .btn:disabled { opacity: 0.55; cursor: not-allowed; }
+
+    .btn-primary {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #fff;
+    }
+
+    .btn-primary:hover { background: var(--primary-hover); }
+
+    .btn-sm {
+      padding: 6px 10px;
+      font-size: 12px;
+      border-radius: 8px;
+    }
+
+    .input, .select {
+      padding: 8px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      font-size: 13px;
+      outline: none;
+    }
+
+    .input:focus, .select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.12);
+    }
+
+    /* Main Tabs */
+    .tabs-bar {
+      max-width: 1180px;
+      margin: 16px auto 0;
+      padding: 0 16px;
+      display: flex;
+      gap: 10px;
+    }
+
+    .tab-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--muted);
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .tab-btn.active {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(29, 78, 216, 0.22);
+    }
+
+    .container {
+      max-width: 1180px;
+      margin: 14px auto 40px;
+      padding: 0 16px;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      box-shadow: var(--shadow);
+    }
+
+    .section-gap { margin-top: 14px; }
+
+    .section-heading {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 0;
+      font-size: 17px;
+      font-weight: 700;
+    }
+
+    .banner-err {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      color: #991b1b;
+      padding: 12px 14px;
+      border-radius: 12px;
+      font-size: 13px;
+      margin-bottom: 14px;
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .banner-err.show { display: flex; }
+
+    /* Filters */
+    .filter-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .filter-group {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .pill-group {
+      display: inline-flex;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 3px;
+      gap: 3px;
+    }
+
+    .pill {
+      padding: 6px 12px;
+      border-radius: 8px;
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .pill.active {
+      background: var(--surface);
+      color: var(--primary);
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.1);
+    }
+
+    .pill.active-green { background: var(--green); color: #fff; }
+    .pill.active-red { background: var(--red); color: #fff; }
+
+    /* KPI / Stat Tiles */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(185px, 1fr));
+      gap: 10px;
+    }
+
+    .kpi-grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .kpi {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 13px 15px;
+      box-shadow: var(--shadow);
+      transition: all 0.15s ease;
+    }
+
+    .kpi.clickable { cursor: pointer; }
+    .kpi.clickable:hover { border-color: #93c5fd; transform: translateY(-1px); }
+    .kpi.tint-green { background: #f0fdf4; border-color: #bbf7d0; }
+    .kpi.tint-red { background: #fef2f2; border-color: #fecaca; }
+    .kpi.tint-active-green { background: #dcfce7; border: 2px solid var(--green); }
+    .kpi.tint-active-red { background: #fee2e2; border: 2px solid var(--red); }
+
+    .kpi-label {
+      font-size: 11.5px;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+
+    .kpi-val {
+      font-size: 25px;
+      font-weight: 800;
+      margin-top: 3px;
+      line-height: 1.15;
+    }
+
+    .kpi-sub {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 5px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .text-green { color: var(--green); }
+    .text-red { color: var(--red); }
+    .text-primary { color: var(--primary); }
+    .text-girl { color: var(--girl); }
+
+    /* Activity Cards Grid */
+    .activity-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    .act-card {
+      background: var(--surface);
+      border: 2px solid var(--border);
+      border-radius: var(--radius);
+      padding: 15px;
+      cursor: pointer;
+      transition: all 0.16s ease;
+      text-align: left;
+      width: 100%;
+    }
+
+    .act-card:hover {
+      border-color: #93c5fd;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(29, 78, 216, 0.1);
+    }
+
+    .act-card.selected {
+      border-color: var(--primary);
+      background: #f8fbff;
+      box-shadow: 0 8px 22px rgba(29, 78, 216, 0.16);
+    }
+
+    .act-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .act-title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .act-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .act-pct {
+      font-size: 12.5px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: var(--primary-soft);
+      color: var(--primary);
+    }
+
+    .act-bar {
+      height: 7px;
+      border-radius: 999px;
+      background: #e2e8f0;
+      overflow: hidden;
+      margin: 11px 0 12px;
+    }
+
+    .act-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #16a34a, #22c55e);
+      border-radius: 999px;
+      transition: width 0.25s ease;
+    }
+
+    .act-badges {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .act-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 5px 10px;
+      border-radius: 8px;
+      border: 1px solid transparent;
+      cursor: pointer;
+    }
+
+    .act-chip:hover { filter: brightness(0.95); }
+
+    .act-chip.present {
+      background: var(--green-soft);
+      color: var(--green);
+      border-color: #bbf7d0;
+    }
+
+    .act-chip.absent {
+      background: var(--red-soft);
+      color: var(--red);
+      border-color: #fecaca;
+    }
+
+    .act-hint {
+      margin-top: 10px;
+      font-size: 11.5px;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .act-card.selected .act-hint {
+      color: var(--primary);
+      font-weight: 600;
+    }
+
+    /* Dashboard Clicked Activity Detail Panel */
+    .detail-panel {
+      margin-top: 16px;
+      background: var(--surface);
+      border: 2px solid var(--primary);
+      border-radius: var(--radius);
+      padding: 18px;
+      box-shadow: 0 8px 24px rgba(29, 78, 216, 0.1);
+      display: none;
+    }
+
+    .detail-panel.open { display: block; }
+
+    .detail-header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 12px;
+    }
+
+    .detail-title {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .detail-sub {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    /* Classic Report Style (Matching Android ReportsScreen) */
+    .report-tabbar {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 14px;
+      box-shadow: var(--shadow);
+    }
+
+    .report-subtab {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      padding: 12px 10px;
+      border: none;
+      border-bottom: 3px solid transparent;
+      background: transparent;
+      color: var(--muted);
+      font-weight: 700;
+      font-size: 13.5px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .report-subtab.active {
+      color: var(--primary);
+      background: var(--primary-soft);
+      border-bottom-color: var(--primary);
+    }
+
+    .report-section-title {
+      font-size: 16px;
+      font-weight: 700;
+      margin: 18px 0 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .report-table-head {
+      background: #dbeafe;
+      color: #1e3a8a;
+      border-radius: 10px;
+      padding: 9px 12px;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.35px;
+      display: grid;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .report-row-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 12px;
+      margin-top: 6px;
+      display: grid;
+      gap: 8px;
+      align-items: center;
+      transition: background 0.12s ease, border-color 0.12s ease;
+    }
+
+    .report-row-card.clickable { cursor: pointer; }
+    .report-row-card.clickable:hover { background: #f8fbff; border-color: #93c5fd; }
+
+    .grid-day {
+      grid-template-columns: 95px minmax(160px, 1.8fr) minmax(90px, 1fr) 92px;
+    }
+
+    .grid-month {
+      grid-template-columns: 90px minmax(160px, 1.8fr) 65px 65px 65px 80px;
+    }
+
+    .grid-summary {
+      grid-template-columns: 120px minmax(150px, 1.6fr) 75px 75px 75px;
+    }
+
+    .col-right { text-align: right; }
+
+    .highlight-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .highlight-card {
+      border-radius: 12px;
+      padding: 12px 14px;
+      border: 1px solid transparent;
+    }
+
+    .highlight-card.high {
+      background: #f0fdf4;
+      border-color: #86efac;
+    }
+
+    .highlight-card.low {
+      background: #fef2f2;
+      border-color: #fca5a5;
+    }
+
+    .highlight-title {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
+    /* Tables (used in Dashboard Detail panel & Student History modal) */
+    .table-wrap {
+      width: 100%;
+      overflow-x: auto;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--surface);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    th, td {
+      padding: 10px 12px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+
+    th {
+      background: var(--surface-2);
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.35px;
+    }
+
+    tr:last-child td { border-bottom: none; }
+    tbody tr:hover { background: #f8fafc; }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 3px 9px;
+      border-radius: 999px;
+      font-size: 11.5px;
+      font-weight: 700;
+    }
+
+    .badge-present { background: var(--green-soft); color: var(--green); }
+    .badge-absent { background: var(--red-soft); color: var(--red); }
+    .badge-boy { background: var(--boy-soft); color: var(--boy); }
+    .badge-girl { background: var(--girl-soft); color: var(--girl); }
+    .badge-neutral { background: #e2e8f0; color: #475569; }
+
+    .empty-state {
+      text-align: center;
+      padding: 28px 16px;
+      color: var(--muted);
+      font-size: 14px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      margin-top: 8px;
+    }
+
+    /* Modal */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.5);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 60;
+    }
+
+    .modal-backdrop.open { display: flex; }
+
+    .modal {
+      background: var(--surface);
+      border-radius: 16px;
+      max-width: 620px;
+      width: 100%;
+      max-height: 88vh;
+      overflow-y: auto;
+      padding: 20px;
+      box-shadow: 0 20px 45px rgba(15, 23, 42, 0.25);
+    }
+
+    .modal h3 { margin: 0 0 8px; font-size: 17px; }
+
+    .diag-box {
+      margin-top: 12px;
+      background: #0f172a;
+      color: #e2e8f0;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 12px;
+      padding: 12px;
+      border-radius: 10px;
+      max-height: 190px;
+      overflow: auto;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .hidden { display: none !important; }
+
+    @media (max-width: 680px) {
+      .topbar { padding: 10px 12px; }
+      .brand h1 { font-size: 15px; }
+      .kpi-val { font-size: 21px; }
+      .grid-day { grid-template-columns: 72px minmax(110px, 1.6fr) 74px 76px; font-size: 12.5px; }
+      .grid-month { grid-template-columns: 68px minmax(110px, 1.6fr) 44px 44px 44px 58px; font-size: 12.5px; }
+      .grid-summary { grid-template-columns: 92px minmax(110px, 1.4fr) 52px 52px 52px; font-size: 12.5px; }
+      .student-name { font-size: 14px; }
+    }
+
+    @media print {
+      .topbar, .tabs-bar, .report-tabbar, .no-print { display: none !important; }
+      body { background: #fff; }
+      .card, .kpi { box-shadow: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Bar -->
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-icon" id="brandClipart"></div>
+      <div>
+        <h1>GSC Student Manager</h1>
+        <div class="brand-sub" id="sheetSubtitle">Google Sheets Live Attendance Portal</div>
+      </div>
+    </div>
+
+    <div class="topbar-actions">
+      <span class="sync-pill" id="syncPill">
+        <span class="sync-dot"></span>
+        <span id="syncText">Connecting…</span>
+      </span>
+      <button class="btn btn-sm" id="autoSyncBtn" title="Toggle 15-second live auto-refresh">Auto-Sync: ON</button>
+      <button class="btn btn-primary btn-sm" id="syncNowBtn">↻ Sync Now</button>
+      <button class="btn btn-sm" id="settingsBtn">⚙ Sheet Link</button>
+    </div>
+  </header>
+
+  <!-- Main 2-Tab Navigation with Clipart -->
+  <nav class="tabs-bar" aria-label="Main Navigation">
+    <button class="tab-btn active" data-tab="dashboard" id="mainTabDashboard"></button>
+    <button class="tab-btn" data-tab="reports" id="mainTabReports"></button>
+  </nav>
+
+  <main class="container">
+    <!-- Error Banner -->
+    <div class="banner-err" id="errorBanner">
+      <span id="errorBannerMsg"></span>
+      <button class="btn btn-sm" id="openDiagFromBanner">View Details</button>
+    </div>
+
+    <!-- ===================== DASHBOARD TAB ===================== -->
+    <section id="tab-dashboard">
+      <!-- Dashboard Controls -->
+      <div class="card">
+        <div class="filter-bar">
+          <div class="filter-group">
+            <span id="dashHeadingClipart"></span>
+            <label for="dashDate" style="font-size:13px;font-weight:700;color:var(--muted);">Date:</label>
+            <input type="date" id="dashDate" class="input" />
+            <button class="btn btn-sm" id="dashLatestDateBtn">Latest Sheet Date</button>
+          </div>
+
+          <div class="filter-group">
+            <div class="pill-group" id="dashGenderPills">
+              <button class="pill active" data-gender="ALL">All</button>
+              <button class="pill" data-gender="MALE">Boys</button>
+              <button class="pill" data-gender="FEMALE">Girls</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- KPI Summary Cards -->
+      <div class="kpi-grid section-gap" id="dashKpiGrid"></div>
+
+      <!-- Activity Breakdown (Click any activity to filter Present / Absent) -->
+      <div class="card section-gap">
+        <div class="filter-bar">
+          <div>
+            <h2 class="section-heading" id="dailyActHeading">Daily Activities</h2>
+            <div style="font-size:12.5px;color:var(--muted);margin-top:2px;">
+              Click <strong>Breakfast, Lunch, Dinner, Meditation, or Yoga</strong> (or its Present/Absent badge) to view and filter students
+            </div>
+          </div>
+          <span class="badge badge-neutral" id="dashDateBadge"></span>
+        </div>
+
+        <div class="activity-grid" id="dashActivitiesGrid"></div>
+      </div>
+
+      <!-- Clicked Activity Present / Absent Filter Panel -->
+      <div class="detail-panel" id="dashActivityDetailPanel">
+        <div class="detail-header">
+          <div>
+            <h3 class="detail-title" id="dashDetailTitle">Activity Attendance</h3>
+            <div class="detail-sub" id="dashDetailSub"></div>
+          </div>
+          <div class="filter-group">
+            <button class="btn btn-sm" id="dashDetailCsvBtn">⬇ Export CSV</button>
+            <button class="btn btn-sm" id="dashDetailCloseBtn">✕ Close</button>
+          </div>
+        </div>
+
+        <div class="filter-bar" style="margin-bottom:12px;">
+          <div class="pill-group" id="dashDetailStatusPills">
+            <button class="pill active" data-status="ALL" id="dashStatusAllBtn">All (0)</button>
+            <button class="pill" data-status="PRESENT" id="dashStatusPresentBtn">Present (0)</button>
+            <button class="pill" data-status="ABSENT" id="dashStatusAbsentBtn">Absent (0)</button>
+          </div>
+
+          <div class="filter-group">
+            <input type="text" id="dashDetailSearch" class="input" placeholder="Search student name or ID…" style="min-width:210px;" />
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Student Name</th>
+                <th>Student ID</th>
+                <th>Course</th>
+                <th>Gender</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="dashDetailBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== REPORTS TAB (PREVIOUS STYLE) ===================== -->
+    <section id="tab-reports" class="hidden">
+      <div class="report-tabbar" id="reportSubtabs">
+        <button class="report-subtab active" data-subtab="day" id="subtabBtnDay"></button>
+        <button class="report-subtab" data-subtab="month" id="subtabBtnMonth"></button>
+        <button class="report-subtab" data-subtab="summary" id="subtabBtnSummary"></button>
+      </div>
+
+      <!-- DAY-WISE REPORT (Previous Stacked Card Style) -->
+      <div id="subtab-day">
+        <div class="card no-print">
+          <div class="filter-bar" style="margin-bottom:10px;">
+            <div class="pill-group" id="repDayGenderPills">
+              <button class="pill active" data-gender="ALL">All</button>
+              <button class="pill" data-gender="MALE">Boys</button>
+              <button class="pill" data-gender="FEMALE">Girls</button>
+            </div>
+            <div class="filter-group">
+              <button class="btn btn-sm" id="repDayCsvBtn">⬇ Excel/CSV</button>
+              <button class="btn btn-primary btn-sm" id="repDayPrintBtn">🖨 Print</button>
+            </div>
+          </div>
+
+          <div class="filter-bar" style="margin-bottom:10px;">
+            <div class="filter-group" style="flex:1;">
+              <input type="date" id="repDayDate" class="input" />
+              <div style="display:inline-flex;align-items:center;gap:6px;">
+                <span id="repDayActIcon"></span>
+                <select id="repDayActivity" class="select"></select>
+              </div>
+              <select id="repDayCourse" class="select">
+                <option value="ALL">All Courses</option>
+              </select>
+              <input type="text" id="repDaySearch" class="input" placeholder="Search student name or ID…" style="flex:1;min-width:180px;" />
+            </div>
+          </div>
+
+          <div class="filter-group">
+            <div class="pill-group" id="repDayStatusPills">
+              <button class="pill active" data-status="ALL" id="repDayAllChip">All (0)</button>
+              <button class="pill" data-status="PRESENT" id="repDayPresentChip">Present List (0)</button>
+              <button class="pill" data-status="ABSENT" id="repDayAbsentChip">Absent List (0)</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="kpi-grid section-gap" id="repDayKpis"></div>
+        <div class="kpi-grid-2" id="repDayGenderSplit"></div>
+        <div id="repDaySections"></div>
+      </div>
+
+      <!-- MONTH-WISE REPORT (Previous Style + Highest/Lowest + Student History) -->
+      <div id="subtab-month" class="hidden">
+        <div class="card no-print">
+          <div class="filter-bar" style="margin-bottom:10px;">
+            <div class="pill-group" id="repMonthGenderPills">
+              <button class="pill active" data-gender="ALL">All</button>
+              <button class="pill" data-gender="MALE">Boys</button>
+              <button class="pill" data-gender="FEMALE">Girls</button>
+            </div>
+            <div class="filter-group">
+              <button class="btn btn-sm" id="repMonthCsvBtn">⬇ Excel/CSV</button>
+              <button class="btn btn-primary btn-sm" id="repMonthPrintBtn">🖨 Print</button>
+            </div>
+          </div>
+
+          <div class="filter-bar" style="margin-bottom:10px;">
+            <div class="filter-group" style="flex:1;">
+              <input type="month" id="repMonthPicker" class="input" />
+              <div style="display:inline-flex;align-items:center;gap:6px;">
+                <span id="repMonthActIcon"></span>
+                <select id="repMonthActivity" class="select"></select>
+              </div>
+              <input type="text" id="repMonthSearch" class="input" placeholder="Search student name or ID…" style="flex:1;min-width:180px;" />
+            </div>
+          </div>
+
+          <div class="filter-group">
+            <div class="pill-group" id="repMonthStatusPills">
+              <button class="pill active" data-status="ALL">All</button>
+              <button class="pill" data-status="PRESENT">Present (≥1)</button>
+              <button class="pill" data-status="ABSENT">Absent (≥1)</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="kpi-grid section-gap" id="repMonthKpis"></div>
+        <div class="kpi-grid-2" id="repMonthGenderSplit"></div>
+        <div class="highlight-grid" id="repMonthHighlights"></div>
+
+        <div style="font-size:12.5px;color:var(--muted);margin:14px 0 8px;">
+          Click any student row to view their date-wise monthly attendance history
+        </div>
+        <div class="report-table-head grid-month">
+          <div>ID</div>
+          <div>Student Name</div>
+          <div class="col-right">Sess</div>
+          <div class="col-right">Pres</div>
+          <div class="col-right">Abs</div>
+          <div class="col-right">Att %</div>
+        </div>
+        <div id="repMonthRows"></div>
+      </div>
+
+      <!-- SUMMARY REPORT (Previous Date-wise Summary Style) -->
+      <div id="subtab-summary" class="hidden">
+        <div class="card no-print">
+          <div class="filter-bar">
+            <div class="pill-group" id="repSumGenderPills">
+              <button class="pill active" data-gender="ALL">All</button>
+              <button class="pill" data-gender="MALE">Boys</button>
+              <button class="pill" data-gender="FEMALE">Girls</button>
+            </div>
+            <div class="filter-group">
+              <input type="date" id="repSumDate" class="input" title="Filter by specific date" />
+              <button class="btn btn-sm" id="repSumClearDateBtn">All Dates</button>
+              <select id="repSumActivity" class="select"></select>
+            </div>
+          </div>
+        </div>
+
+        <div class="kpi-grid section-gap" id="repSumKpis"></div>
+
+        <div style="font-size:12.5px;color:var(--muted);margin:14px 0 8px;">
+          Click any session row to open its full Present &amp; Absent student list
+        </div>
+        <div class="report-table-head grid-summary">
+          <div>Date</div>
+          <div>Activity</div>
+          <div class="col-right">Pres</div>
+          <div class="col-right">Abs</div>
+          <div class="col-right">Total</div>
+        </div>
+        <div id="repSumRows"></div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Student Monthly History Modal -->
+  <div class="modal-backdrop" id="historyModal">
+    <div class="modal">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px;">
+        <div>
+          <h3 id="historyModalName" class="student-name" style="font-size:18px;font-weight:700;margin:0;">Student History</h3>
+          <div id="historyModalSub" style="font-size:12.5px;color:var(--muted);margin-top:2px;"></div>
+        </div>
+        <button class="btn btn-sm" id="closeHistoryBtn">✕ Close</button>
+      </div>
+      <div class="table-wrap" style="margin-top:10px;">
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Activity</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="historyModalBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sheet Link & Sync Diagnostics Modal -->
+  <div class="modal-backdrop" id="settingsModal">
+    <div class="modal">
+      <h3>Google Sheet Sync Link &amp; Diagnostics</h3>
+      <p style="margin:0 0 12px;font-size:13px;color:var(--muted);">
+        Uses your existing Google Apps Script Web App URL directly (read-only live sync).
+      </p>
+      <label for="scriptUrlInput" style="font-size:12.5px;font-weight:700;">Apps Script Web App URL</label>
+      <input type="url" id="scriptUrlInput" class="input" style="width:100%;margin-top:6px;" />
+
+      <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;justify-content:flex-end;">
+        <button class="btn btn-sm" id="resetDefaultUrlBtn">Reset Default URL</button>
+        <button class="btn btn-sm" id="closeSettingsBtn">Close</button>
+        <button class="btn btn-primary btn-sm" id="saveSettingsBtn">Save &amp; Sync</button>
+      </div>
+
+      <div style="margin-top:14px;font-size:12px;font-weight:700;color:var(--muted);">Last Sync Diagnostics</div>
+      <div class="diag-box" id="diagBox">Waiting for first sync…</div>
+    </div>
+  </div>
+
+  <script>
+    (() => {
+      const DEFAULT_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxpS3RhQw9EXi41JMEQJFKdgprClrbL44Lh7yQj6DKOBbA9D8mRXawmf8um351fy1z-1A/exec";
+      const STORAGE_URL_KEY = "gsc_web_script_url_v5";
+      const STORAGE_CACHE_KEY = "gsc_web_cache_v5";
+      const CORE_ACTIVITIES = ["Breakfast", "Lunch", "Dinner", "Meditation", "Yoga"];
+      const AUTO_SYNC_MS = 15000;
+
+      /* ==================== COLORFUL SVG CLIPART LIBRARY ==================== */
+      const CLIPART = {
+        brand: `<svg viewBox="0 0 48 48" width="26" height="26" fill="none">
+          <rect x="6" y="10" width="36" height="30" rx="6" fill="#fff" fill-opacity="0.22"/>
+          <path d="M24 8L4 17l20 9 20-9-20-9z" fill="#fde047"/>
+          <path d="M12 22v10c0 4 5.4 7 12 7s12-3 12-7V22l-12 5.4L12 22z" fill="#ffffff"/>
+          <circle cx="40" cy="27" r="2.5" fill="#fde047"/>
+        </svg>`,
+
+        dashboard: `<svg viewBox="0 0 48 48" width="22" height="22" fill="none">
+          <rect x="5" y="5" width="17" height="17" rx="4" fill="#60a5fa"/>
+          <rect x="26" y="5" width="17" height="11" rx="4" fill="#34d399"/>
+          <rect x="26" y="20" width="17" height="23" rx="4" fill="#fbbf24"/>
+          <rect x="5" y="26" width="17" height="17" rx="4" fill="#f472b6"/>
+        </svg>`,
+
+        reports: `<svg viewBox="0 0 48 48" width="22" height="22" fill="none">
+          <rect x="9" y="7" width="30" height="36" rx="5" fill="#e0f2fe" stroke="#0284c7" stroke-width="2.5"/>
+          <rect x="17" y="4" width="14" height="7" rx="3" fill="#0284c7"/>
+          <rect x="15" y="27" width="4" height="10" rx="1.5" fill="#22c55e"/>
+          <rect x="22" y="21" width="4" height="16" rx="1.5" fill="#3b82f6"/>
+          <rect x="29" y="16" width="4" height="21" rx="1.5" fill="#f59e0b"/>
+        </svg>`,
+
+        daywise: `<svg viewBox="0 0 48 48" width="20" height="20" fill="none">
+          <rect x="6" y="10" width="36" height="32" rx="5" fill="#fff7ed" stroke="#ea580c" stroke-width="2.5"/>
+          <path d="M6 19h36" stroke="#ea580c" stroke-width="2.5"/>
+          <rect x="14" y="5" width="4" height="9" rx="2" fill="#ea580c"/>
+          <rect x="30" y="5" width="4" height="9" rx="2" fill="#ea580c"/>
+          <circle cx="24" cy="30" r="6" fill="#22c55e"/>
+          <path d="M21 30l2 2 4-4" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>`,
+
+        monthwise: `<svg viewBox="0 0 48 48" width="20" height="20" fill="none">
+          <rect x="6" y="10" width="36" height="32" rx="5" fill="#eff6ff" stroke="#2563eb" stroke-width="2.5"/>
+          <path d="M6 19h36" stroke="#2563eb" stroke-width="2.5"/>
+          <rect x="14" y="5" width="4" height="9" rx="2" fill="#2563eb"/>
+          <rect x="30" y="5" width="4" height="9" rx="2" fill="#2563eb"/>
+          <rect x="13" y="24" width="5" height="5" rx="1" fill="#60a5fa"/>
+          <rect x="21.5" y="24" width="5" height="5" rx="1" fill="#22c55e"/>
+          <rect x="30" y="24" width="5" height="5" rx="1" fill="#60a5fa"/>
+          <rect x="13" y="32" width="5" height="5" rx="1" fill="#f59e0b"/>
+          <rect x="21.5" y="32" width="5" height="5" rx="1" fill="#60a5fa"/>
+          <rect x="30" y="32" width="5" height="5" rx="1" fill="#ef4444"/>
+        </svg>`,
+
+        summary: `<svg viewBox="0 0 48 48" width="20" height="20" fill="none">
+          <rect x="7" y="8" width="34" height="32" rx="5" fill="#f0fdf4" stroke="#16a34a" stroke-width="2.5"/>
+          <path d="M14 18h20M14 25h14M14 32h18" stroke="#15803d" stroke-width="3" stroke-linecap="round"/>
+          <circle cx="34" cy="25" r="3" fill="#f59e0b"/>
+        </svg>`,
+
+        Breakfast: `<svg viewBox="0 0 48 48" width="100%" height="100%" fill="none">
+          <circle cx="24" cy="24" r="22" fill="#FEF3C7"/>
+          <circle cx="14" cy="14" r="5" fill="#F59E0B"/>
+          <path d="M14 6v2M14 20v2M6 14h2M20 14h2" stroke="#F59E0B" stroke-width="2" stroke-linecap="round"/>
+          <path d="M13 24h18v7a9 9 0 01-18 0v-7z" fill="#EA580C"/>
+          <path d="M31 26h3.5a3.5 3.5 0 010 7H31" stroke="#EA580C" stroke-width="2.6" stroke-linecap="round"/>
+          <path d="M18 18c0-2 1.5-2.5 1.5-4.5M23 18c0-2 1.5-2.5 1.5-4.5M28 18c0-2 1.5-2.5 1.5-4.5" stroke="#D97706" stroke-width="2" stroke-linecap="round"/>
+          <rect x="11" y="38" width="24" height="3" rx="1.5" fill="#B45309"/>
+        </svg>`,
+
+        Lunch: `<svg viewBox="0 0 48 48" width="100%" height="100%" fill="none">
+          <circle cx="24" cy="24" r="22" fill="#DCFCE7"/>
+          <circle cx="24" cy="25" r="13" fill="#FFFFFF" stroke="#16A34A" stroke-width="2.5"/>
+          <circle cx="24" cy="25" r="9" fill="#FEF08A"/>
+          <circle cx="20" cy="23" r="3" fill="#EA580C"/>
+          <circle cx="28" cy="23" r="2.6" fill="#22C55E"/>
+          <path d="M19 29c2.5 1.8 7.5 1.8 10 0" stroke="#DC2626" stroke-width="2.4" stroke-linecap="round"/>
+          <path d="M8 14v22M6 14v6a2 2 0 004 0v-6" stroke="#15803D" stroke-width="2" stroke-linecap="round"/>
+          <path d="M40 14v22M40 14c2.2 0 3 2.5 3 5s-1 4-3 4" stroke="#15803D" stroke-width="2" stroke-linecap="round"/>
+        </svg>`,
+
+        Dinner: `<svg viewBox="0 0 48 48" width="100%" height="100%" fill="none">
+          <circle cx="24" cy="24" r="22" fill="#E0E7FF"/>
+          <path d="M33 10a6 6 0 11-5.6 8.2A5 5 0 0033 10z" fill="#6366F1"/>
+          <circle cx="15" cy="13" r="1.8" fill="#818CF8"/>
+          <circle cx="22" cy="10" r="1.4" fill="#818CF8"/>
+          <path d="M10 26h28c0 7.5-5.8 12.5-14 12.5S10 33.5 10 26z" fill="#4338CA"/>
+          <path d="M12 26c2-4 6-6 12-6s10 2 12 6" fill="#FDBA74"/>
+          <circle cx="20" cy="23" r="1.8" fill="#DC2626"/>
+          <circle cx="27" cy="23.5" r="1.8" fill="#16A34A"/>
+          <rect x="16" y="38.5" width="16" height="2.8" rx="1.4" fill="#312E81"/>
+        </svg>`,
+
+        Meditation: `<svg viewBox="0 0 48 48" width="100%" height="100%" fill="none">
+          <circle cx="24" cy="24" r="22" fill="#F3E8FF"/>
+          <circle cx="24" cy="15" r="4.5" fill="#7C3AED"/>
+          <path d="M24 21c-4.5 0-8 3.2-9 7.5l-4 3.5c-1.2 1-.5 3 1.2 3h23.6c1.7 0 2.4-2 1.2-3l-4-3.5c-1-4.3-4.5-7.5-9-7.5z" fill="#9333EA"/>
+          <path d="M11 36c4 2.8 8.5 4 13 4s9-1.2 13-4" stroke="#A855F7" stroke-width="2.5" stroke-linecap="round"/>
+          <path d="M24 6v2.5M14 10l1.8 1.8M34 10l-1.8 1.8" stroke="#C084FC" stroke-width="2.2" stroke-linecap="round"/>
+        </svg>`,
+
+        Yoga: `<svg viewBox="0 0 48 48" width="100%" height="100%" fill="none">
+          <circle cx="24" cy="24" r="22" fill="#FCE7F3"/>
+          <circle cx="24" cy="13" r="4" fill="#DB2777"/>
+          <path d="M12 18c4 2 8 3 12 3s8-1 12-3" stroke="#EC4899" stroke-width="3.2" stroke-linecap="round"/>
+          <path d="M24 19v11" stroke="#DB2777" stroke-width="4" stroke-linecap="round"/>
+          <path d="M24 29l-9 8M24 29l9 8" stroke="#BE185D" stroke-width="3.4" stroke-linecap="round"/>
+          <rect x="8" y="38" width="32" height="3.2" rx="1.6" fill="#F472B6"/>
+        </svg>`,
+
+        Other: `<svg viewBox="0 0 48 48" width="100%" height="100%" fill="none">
+          <circle cx="24" cy="24" r="22" fill="#E0F2FE"/>
+          <path d="M24 10l3.8 8.2 9 1.1-6.6 6.2 1.7 8.9L24 30l-7.9 4.4 1.7-8.9-6.6-6.2 9-1.1L24 10z" fill="#0284C7"/>
+        </svg>`
+      };
+
+      function getActivityClipart(actName, sizeClass = "clipart-lg") {
+        const key = CLIPART[actName] ? actName : "Other";
+        return `<span class="clipart ${sizeClass}" aria-hidden="true">${CLIPART[key]}</span>`;
+      }
+
+      // Mount static clipart icons in header & tabs
+      document.getElementById("brandClipart").innerHTML = CLIPART.brand;
+      document.getElementById("mainTabDashboard").innerHTML = `<span class="clipart">${CLIPART.dashboard}</span><span>Dashboard</span>`;
+      document.getElementById("mainTabReports").innerHTML = `<span class="clipart">${CLIPART.reports}</span><span>Reports</span>`;
+      document.getElementById("dashHeadingClipart").innerHTML = `<span class="clipart">${CLIPART.dashboard}</span>`;
+      document.getElementById("subtabBtnDay").innerHTML = `<span class="clipart">${CLIPART.daywise}</span><span>Day-wise</span>`;
+      document.getElementById("subtabBtnMonth").innerHTML = `<span class="clipart">${CLIPART.monthwise}</span><span>Month-wise</span>`;
+      document.getElementById("subtabBtnSummary").innerHTML = `<span class="clipart">${CLIPART.summary}</span><span>Summary</span>`;
+
+      /* ==================== APP STATE ==================== */
+      const state = {
+        scriptUrl: localStorage.getItem(STORAGE_URL_KEY) || DEFAULT_SCRIPT_URL,
+        sheetTitle: "GSC Student Manager",
+        students: [],
+        records: [],
+        studentMap: new Map(),
+        activities: [...CORE_ACTIVITIES],
+
+        activeTab: "dashboard",
+        activeSubtab: "day",
+
+        // Dashboard state
+        dashDate: todayIso(),
+        dashDateUserPicked: false,
+        dashGender: "ALL",
+        dashSelectedActivity: null,
+        dashDetailStatus: "ALL",
+        dashDetailSearch: "",
+
+        // Day report state
+        repDayDate: todayIso(),
+        repDayDateUserPicked: false,
+        repDayActivity: "Breakfast",
+        repDayCourse: "ALL",
+        repDaySearch: "",
+        repDayGender: "ALL",
+        repDayStatus: "ALL",
+
+        // Month report state
+        repMonth: todayIso().slice(0, 7),
+        repMonthUserPicked: false,
+        repMonthActivity: "Breakfast",
+        repMonthSearch: "",
+        repMonthGender: "ALL",
+        repMonthStatus: "ALL",
+
+        // Summary state (Date-wise Summary)
+        repSumDate: "",
+        repSumActivity: "ALL",
+        repSumGender: "ALL",
+
+        // Sync state
+        syncing: false,
+        autoSync: true,
+        autoSyncTimer: null,
+        lastSyncTime: null,
+        diagnostics: "Initializing…"
+      };
+
+      /* ==================== HELPERS ==================== */
+      function esc(str) {
+        return String(str ?? "")
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#39;");
+      }
+
+      function todayIso() {
+        const d = new Date();
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+      }
+
+      function formatLocalDate(d) {
+        if (!(d instanceof Date) || isNaN(d.getTime())) return null;
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+      }
+
+      function normalizeIsoDate(raw) {
+        if (raw === null || raw === undefined) return null;
+        if (typeof raw === "number" && isFinite(raw) && raw > 20000 && raw < 90000) {
+          return formatLocalDate(new Date(Math.round((raw - 25569) * 86400 * 1000)));
+        }
+        const s = String(raw).trim();
+        if (!s) return null;
+
+        const gviz = s.match(/^Date\((\d{4}),\s*(\d{1,2}),\s*(\d{1,2})/i);
+        if (gviz) {
+          return `${gviz[1]}-${String(Number(gviz[2]) + 1).padStart(2, "0")}-${String(Number(gviz[3])).padStart(2, "0")}`;
+        }
+
+        const exact = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+        if (exact) return `${exact[1]}-${exact[2].padStart(2, "0")}-${exact[3].padStart(2, "0")}`;
+
+        if (/^\d{4}-\d{2}-\d{2}T/.test(s)) {
+          const parsed = new Date(s);
+          if (!isNaN(parsed.getTime())) return formatLocalDate(parsed);
+        }
+
+        const dmy = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
+        if (dmy) {
+          const a = Number(dmy[1]), b = Number(dmy[2]), y = dmy[3];
+          const day = a > 12 ? a : (b > 12 ? b : a);
+          const mon = a > 12 ? b : (b > 12 ? a : b);
+          return `${y}-${String(mon).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+        }
+
+        if (/^\d{5}(\.\d+)?$/.test(s)) {
+          const num = Number(s);
+          if (num > 20000 && num < 90000) {
+            return formatLocalDate(new Date(Math.round((num - 25569) * 86400 * 1000)));
+          }
+        }
+
+        const fallback = new Date(s);
+        if (!isNaN(fallback.getTime())) return formatLocalDate(fallback);
+        return null;
+      }
+
+      function normalizeActivity(raw) {
+        const s = String(raw ?? "").trim();
+        if (!s) return null;
+        const low = s.toLowerCase();
+        if (low === "breakfast" || low === "brk") return "Breakfast";
+        if (low === "lunch" || low === "lun") return "Lunch";
+        if (low === "dinner" || low === "din") return "Dinner";
+        if (low === "meditation" || low === "med") return "Meditation";
+        if (low === "yoga" || low === "yog") return "Yoga";
+        return s;
+      }
+
+      function normalizeGender(raw) {
+        const s = String(raw ?? "").trim().toLowerCase();
+        if (!s) return "UNSPECIFIED";
+        if (s === "male" || s === "m" || s === "boy" || s === "boys") return "MALE";
+        if (s === "female" || s === "f" || s === "girl" || s === "girls") return "FEMALE";
+        return "UNSPECIFIED";
+      }
+
+      function normalizeStatus(raw) {
+        const s = String(raw ?? "").trim().toLowerCase();
+        if (s === "absent" || s === "a" || s === "0" || s === "false" || s === "no") return "ABSENT";
+        return "PRESENT";
+      }
+
+      function matchesGender(gender, filter) {
+        return filter === "ALL" || gender === filter;
+      }
+
+      function genderBadgeHtml(gender) {
+        if (gender === "MALE") return `<span class="badge badge-boy">Boy</span>`;
+        if (gender === "FEMALE") return `<span class="badge badge-girl">Girl</span>`;
+        return "";
+      }
+
+      function statusBadgeHtml(status) {
+        return status === "PRESENT"
+          ? `<span class="badge badge-present">Present</span>`
+          : `<span class="badge badge-absent">Absent</span>`;
+      }
+
+      function isEligibleOnDate(student, recordDate) {
+        if (!student) return true;
+        if (student.joiningDate && recordDate < student.joiningDate) return false;
+        if (!student.isActive && (!student.inactiveDate || recordDate >= student.inactiveDate)) return false;
+        return true;
+      }
+
+      function getLatestSheetDate() {
+        let maxDate = "";
+        for (const r of state.records) {
+          if (r.date && r.date > maxDate) maxDate = r.date;
+        }
+        return maxDate || todayIso();
+      }
+
+      function activitySortIndex(act) {
+        const idx = CORE_ACTIVITIES.indexOf(act);
+        return idx === -1 ? 999 : idx;
+      }
+
+      /* ==================== PARSING SHEETS DATA ==================== */
+      function normalizeHeaderName(raw) {
+        return String(raw ?? "").trim().toLowerCase().replace(/[^a-z0-9]/g, "");
+      }
+
+      function toMatrix(arr) {
+        if (!Array.isArray(arr) || arr.length === 0) return [];
+        const first = arr[0];
+        if (first && typeof first === "object" && !Array.isArray(first)) {
+          const keys = [];
+          const seen = new Set();
+          for (const item of arr) {
+            if (!item || typeof item !== "object") continue;
+            for (const k of Object.keys(item)) {
+              if (!seen.has(k)) { seen.add(k); keys.push(k); }
+            }
+          }
+          const rows = [keys];
+          for (const item of arr) {
+            if (!item || typeof item !== "object") continue;
+            rows.push(keys.map(k => (item[k] === null || item[k] === undefined) ? "" : String(item[k])));
+          }
+          return rows;
+        }
+        return arr.filter(Array.isArray).map(row =>
+          row.map(cell => (cell === null || cell === undefined) ? "" : cell)
+        );
+      }
+
+      function extractMatrix(obj, keys) {
+        if (!obj || typeof obj !== "object") return [];
+        for (const k of keys) {
+          if (Array.isArray(obj[k])) return toMatrix(obj[k]);
+        }
+        return [];
+      }
+
+      function hasSheetArrays(parsed) {
+        if (!parsed || typeof parsed !== "object") return false;
+        const d = (parsed.data && typeof parsed.data === "object") ? parsed.data : parsed;
+        return Boolean(
+          Array.isArray(d.students) || Array.isArray(d.Students) ||
+          Array.isArray(d.attendance) || Array.isArray(d.Attendance) ||
+          Array.isArray(d.records) || Array.isArray(d.attendanceRecords)
+        );
+      }
+
+      function buildHeaderMap(row) {
+        const map = {};
+        (row || []).forEach((raw, idx) => {
+          const norm = normalizeHeaderName(raw);
+          if (norm && !(norm in map)) map[norm] = idx;
+        });
+        return map;
+      }
+
+      function looksLikeHeaderRow(row, knownTokens) {
+        if (!Array.isArray(row)) return false;
+        let hits = 0;
+        for (const cell of row) {
+          if (knownTokens.has(normalizeHeaderName(cell))) hits++;
+        }
+        return hits >= 2;
+      }
+
+      function getCell(row, headers, fallbackIdx, names) {
+        for (const n of names) {
+          const idx = headers[n];
+          if (idx !== undefined && idx < row.length) {
+            const val = row[idx];
+            return val === null || val === undefined ? "" : String(val).trim();
+          }
+        }
+        if (Object.keys(headers).length === 0 || !Object.values(headers).includes(fallbackIdx)) {
+          const val = row[fallbackIdx];
+          return val === null || val === undefined ? "" : String(val).trim();
+        }
+        return "";
+      }
+
+      function parseStudentsAndAttendance(rawStudentsMatrix, rawAttendanceMatrix) {
+        const studentHeaderTokens = new Set(["studentid", "id", "studentname", "name", "course", "joiningdate", "status", "gender", "phone"]);
+        const attHeaderTokens = new Set(["recordid", "date", "attendancedate", "activity", "studentid", "studentname", "attendancestatus", "status"]);
+
+        let sHeaders = {};
+        let sRows = rawStudentsMatrix;
+        if (rawStudentsMatrix.length > 0 && looksLikeHeaderRow(rawStudentsMatrix[0], studentHeaderTokens)) {
+          sHeaders = buildHeaderMap(rawStudentsMatrix[0]);
+          sRows = rawStudentsMatrix.slice(1);
+        }
+
+        const studentById = new Map();
+        for (const row of sRows) {
+          const studentId = getCell(row, sHeaders, 0, ["studentid", "id", "rollno", "rollnumber", "sid"]);
+          const name = getCell(row, sHeaders, 1, ["studentname", "name", "fullname", "student"]);
+          if (!studentId || !name) continue;
+          const course = getCell(row, sHeaders, 2, ["course", "program", "batch", "department"]);
+          const joiningDate = normalizeIsoDate(getCell(row, sHeaders, 3, ["joiningdate", "joindate", "dateofjoining", "enrolleddate"])) || "";
+          const statusRaw = getCell(row, sHeaders, 4, ["status", "activestatus", "isactive"]);
+          const isActive = statusRaw.toLowerCase() !== "inactive" && statusRaw.toLowerCase() !== "false";
+          const inactiveDate = normalizeIsoDate(getCell(row, sHeaders, 5, ["inactivedate", "deactivateddate"])) || "";
+          const phone = getCell(row, sHeaders, 6, ["phone", "mobile", "contact", "phonenumber"]);
+          const updatedAt = Number(getCell(row, sHeaders, 7, ["updatedat", "timestamp"])) || 0;
+          const genderRaw = getCell(row, sHeaders, 8, ["gender", "sex", "boysgirls", "group", "mf", "category"]) || String(row[8] ?? "").trim();
+          const gender = normalizeGender(genderRaw);
+
+          const existing = studentById.get(studentId);
+          if (!existing || updatedAt >= existing.updatedAt) {
+            studentById.set(studentId, {
+              studentId,
+              name,
+              course,
+              joiningDate,
+              isActive,
+              inactiveDate,
+              phone,
+              updatedAt,
+              gender: gender === "UNSPECIFIED" && existing ? existing.gender : gender
+            });
+          }
+        }
+
+        let aHeaders = {};
+        let aRows = rawAttendanceMatrix;
+        if (rawAttendanceMatrix.length > 0 && looksLikeHeaderRow(rawAttendanceMatrix[0], attHeaderTokens)) {
+          aHeaders = buildHeaderMap(rawAttendanceMatrix[0]);
+          aRows = rawAttendanceMatrix.slice(1);
+        }
+
+        const recByComposite = new Map();
+        const extraActivities = new Set();
+
+        for (const row of aRows) {
+          const date = normalizeIsoDate(getCell(row, aHeaders, 1, ["date", "attendancedate", "sessiondate"]));
+          if (!date) continue;
+          const activity = normalizeActivity(getCell(row, aHeaders, 2, ["activity", "session", "type", "category"]));
+          if (!activity) continue;
+          const studentId = getCell(row, aHeaders, 3, ["studentid", "sid", "rollno", "rollnumber", "id"]);
+          if (!studentId) continue;
+
+          if (!CORE_ACTIVITIES.includes(activity)) extraActivities.add(activity);
+
+          const rawName = getCell(row, aHeaders, 4, ["studentname", "name", "fullname", "student"]);
+          const status = normalizeStatus(getCell(row, aHeaders, 5, ["attendancestatus", "status", "presentabsent"]));
+          const course = getCell(row, aHeaders, 6, ["course", "program", "batch"]);
+          const updatedAt = Number(getCell(row, aHeaders, 7, ["updatedat", "timestamp"])) || 0;
+          const recordId = getCell(row, aHeaders, 0, ["recordid", "uniquerecordid"]) || `${date}_${activity}_${studentId}`;
+
+          if (!studentById.has(studentId)) {
+            studentById.set(studentId, {
+              studentId,
+              name: rawName || studentId,
+              course,
+              joiningDate: "",
+              isActive: true,
+              inactiveDate: "",
+              phone: "",
+              updatedAt: 0,
+              gender: "UNSPECIFIED"
+            });
+          }
+
+          const matched = studentById.get(studentId);
+          const key = `${date}||${activity}||${studentId}`;
+          const prev = recByComposite.get(key);
+          if (!prev || updatedAt >= prev.updatedAt) {
+            recByComposite.set(key, {
+              recordId,
+              date,
+              activity,
+              studentId,
+              studentName: (rawName && rawName !== studentId) ? rawName : (matched ? matched.name : studentId),
+              course: course || (matched ? matched.course : ""),
+              status,
+              updatedAt
+            });
+          }
+        }
+
+        return {
+          students: Array.from(studentById.values()),
+          records: Array.from(recByComposite.values()),
+          activities: [...CORE_ACTIVITIES, ...Array.from(extraActivities).sort()],
+          studentHeaders: rawStudentsMatrix[0] || [],
+          attendanceHeaders: rawAttendanceMatrix[0] || []
+        };
+      }
+
+      /* ==================== NETWORK SYNC ==================== */
+      async function postSyncPage(url, page) {
+        const body = JSON.stringify({
+          action: "sync",
+          includeData: true,
+          page,
+          pageSize: 500,
+          studentsSheet: "Students",
+          attendanceSheet: "Attendance",
+          editHistorySheet: "EditHistory",
+          students: [],
+          attendance: [],
+          editHistory: []
+        });
+        const resp = await fetch(url, {
+          method: "POST",
+          mode: "cors",
+          credentials: "omit",
+          redirect: "follow",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body
+        });
+        const text = (await resp.text()).trim();
+        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+        if (text.startsWith("<")) throw new Error("Received HTML instead of JSON (check Apps Script access = Anyone)");
+        return JSON.parse(text);
+      }
+
+      async function getSyncUrl(url, withParams) {
+        let target = url;
+        if (withParams) {
+          const sep = url.includes("?") ? "&" : "?";
+          target = `${url}${sep}action=sync&includeData=true&page=1&pageSize=500&studentsSheet=Students&attendanceSheet=Attendance&editHistorySheet=EditHistory`;
+        }
+        const resp = await fetch(target, {
+          method: "GET",
+          mode: "cors",
+          credentials: "omit",
+          redirect: "follow"
+        });
+        const text = (await resp.text()).trim();
+        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+        if (text.startsWith("<")) throw new Error("Received HTML instead of JSON");
+        return JSON.parse(text);
+      }
+
+      async function fetchGvizTab(sheetId, tabName) {
+        const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(tabName)}`;
+        const resp = await fetch(url, { mode: "cors", credentials: "omit" });
+        const text = await resp.text();
+        const start = text.indexOf("{");
+        const end = text.lastIndexOf("}");
+        if (start === -1 || end === -1) return [];
+        const json = JSON.parse(text.slice(start, end + 1));
+        const cols = (json.table?.cols || []).map(c => c.label || "");
+        const rows = (json.table?.rows || []).map(r => (r.c || []).map(cell => cell ? (cell.f ?? cell.v ?? "") : ""));
+        return cols.some(Boolean) ? [cols, ...rows] : rows;
+      }
+
+      function mergeMatrices(base, incoming) {
+        if (!incoming || incoming.length === 0) return base;
+        if (base.length === 0) return incoming;
+        const sameHeader = JSON.stringify(base[0]) === JSON.stringify(incoming[0]);
+        return sameHeader ? base.concat(incoming.slice(1)) : base.concat(incoming);
+      }
+
+      async function syncFromSheet(isManual = false) {
+        if (state.syncing) return;
+        state.syncing = true;
+        setSyncStatus("busy", isManual ? "Syncing…" : "Updating…");
+        hideError();
+
+        const url = (state.scriptUrl || "").trim();
+        const logs = [`URL: ${url}`];
+        let rawStudents = [];
+        let rawAttendance = [];
+        let title = state.sheetTitle;
+        let methodUsed = "";
+
+        try {
+          const sheetMatch = url.match(/docs\.google\.com\/spreadsheets\/d\/([a-zA-Z0-9_-]+)/);
+          if (sheetMatch) {
+            methodUsed = "Google Visualization API (gviz)";
+            rawStudents = await fetchGvizTab(sheetMatch[1], "Students");
+            rawAttendance = await fetchGvizTab(sheetMatch[1], "Attendance");
+          } else {
+            let parsedFirst = null;
+            try {
+              const p1 = await postSyncPage(url, 1);
+              if (hasSheetArrays(p1)) {
+                parsedFirst = p1;
+                methodUsed = "POST (action=sync)";
+                const d1 = p1.data || p1;
+                if (p1.title || d1.title) title = p1.title || d1.title;
+                rawStudents = mergeMatrices(rawStudents, extractMatrix(d1, ["students", "Students"]));
+                rawAttendance = mergeMatrices(rawAttendance, extractMatrix(d1, ["attendance", "Attendance", "records", "attendanceRecords"]));
+
+                let pag = p1.pagination || d1.pagination;
+                let page = 2;
+                while (pag && pag.hasMore && page <= 50) {
+                  const nextPage = await postSyncPage(url, page);
+                  const dn = nextPage.data || nextPage;
+                  rawStudents = mergeMatrices(rawStudents, extractMatrix(dn, ["students", "Students"]));
+                  rawAttendance = mergeMatrices(rawAttendance, extractMatrix(dn, ["attendance", "Attendance", "records", "attendanceRecords"]));
+                  pag = nextPage.pagination || dn.pagination;
+                  page++;
+                }
+                if (page > 2) logs.push(`Fetched ${page - 1} pages via POST`);
+              } else {
+                logs.push("POST returned no sheet arrays. Trying GET…");
+              }
+            } catch (postErr) {
+              logs.push(`POST failed: ${postErr.message}`);
+            }
+
+            if (!parsedFirst) {
+              try {
+                const g1 = await getSyncUrl(url, true);
+                if (hasSheetArrays(g1)) {
+                  parsedFirst = g1;
+                  methodUsed = "GET (?action=sync)";
+                  const d = g1.data || g1;
+                  if (g1.title || d.title) title = g1.title || d.title;
+                  rawStudents = extractMatrix(d, ["students", "Students"]);
+                  rawAttendance = extractMatrix(d, ["attendance", "Attendance", "records", "attendanceRecords"]);
+                } else {
+                  logs.push("GET ?action=sync returned no sheet arrays. Trying plain GET…");
+                }
+              } catch (getErr) {
+                logs.push(`GET ?action=sync failed: ${getErr.message}`);
+              }
+            }
+
+            if (!parsedFirst) {
+              const g2 = await getSyncUrl(url, false);
+              if (!hasSheetArrays(g2)) throw new Error("Apps Script did not return Students/Attendance arrays.");
+              methodUsed = "GET (plain)";
+              const d = g2.data || g2;
+              if (g2.title || d.title) title = g2.title || d.title;
+              rawStudents = extractMatrix(d, ["students", "Students"]);
+              rawAttendance = extractMatrix(d, ["attendance", "Attendance", "records", "attendanceRecords"]);
+            }
+          }
+
+          const parsed = parseStudentsAndAttendance(rawStudents, rawAttendance);
+          state.sheetTitle = title || "GSC Student Manager";
+          state.students = parsed.students;
+          state.records = parsed.records;
+          state.studentMap = new Map(parsed.students.map(s => [s.studentId, s]));
+          state.activities = parsed.activities;
+          state.lastSyncTime = new Date();
+
+          const latestDate = getLatestSheetDate();
+          const hasToday = state.records.some(r => r.date === todayIso());
+          if (!state.dashDateUserPicked) state.dashDate = hasToday ? todayIso() : latestDate;
+          if (!state.repDayDateUserPicked) state.repDayDate = hasToday ? todayIso() : latestDate;
+          if (!state.repMonthUserPicked) state.repMonth = (hasToday ? todayIso() : latestDate).slice(0, 7);
+
+          try {
+            localStorage.setItem(STORAGE_CACHE_KEY, JSON.stringify({
+              sheetTitle: state.sheetTitle,
+              students: state.students,
+              records: state.records,
+              activities: state.activities,
+              savedAt: Date.now()
+            }));
+          } catch (_) {}
+
+          logs.push(`Method: ${methodUsed}`);
+          logs.push(`Raw rows -> Students: ${rawStudents.length}, Attendance: ${rawAttendance.length}`);
+          logs.push(`Parsed -> Students: ${state.students.length}, Attendance: ${state.records.length}`);
+          logs.push(`Latest Date in Sheet: ${latestDate}`);
+          logs.push(`Student Headers: ${JSON.stringify(parsed.studentHeaders)}`);
+          logs.push(`Attendance Headers: ${JSON.stringify(parsed.attendanceHeaders)}`);
+          state.diagnostics = logs.join("\n");
+
+          const timeStr = state.lastSyncTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+          setSyncStatus("ok", `Synced ${timeStr}`);
+          renderAll();
+        } catch (err) {
+          logs.push(`ERROR: ${err.message}`);
+          state.diagnostics = logs.join("\n");
+          setSyncStatus("err", "Sync Failed");
+          showError(`Could not sync Google Sheet: ${err.message}`);
+          updateDiagUI();
+        } finally {
+          state.syncing = false;
+        }
+      }
+
+      function loadCache() {
+        try {
+          const raw = localStorage.getItem(STORAGE_CACHE_KEY);
+          if (!raw) return;
+          const cached = JSON.parse(raw);
+          if (Array.isArray(cached.students) && Array.isArray(cached.records)) {
+            state.sheetTitle = cached.sheetTitle || state.sheetTitle;
+            state.students = cached.students;
+            state.records = cached.records;
+            state.studentMap = new Map(cached.students.map(s => [s.studentId, s]));
+            state.activities = Array.isArray(cached.activities) && cached.activities.length ? cached.activities : [...CORE_ACTIVITIES];
+            const latestDate = getLatestSheetDate();
+            const hasToday = state.records.some(r => r.date === todayIso());
+            state.dashDate = hasToday ? todayIso() : latestDate;
+            state.repDayDate = state.dashDate;
+            state.repMonth = state.dashDate.slice(0, 7);
+          }
+        } catch (_) {}
+      }
+
+      /* ==================== RENDER: DASHBOARD ==================== */
+      function renderDashboard() {
+        document.getElementById("sheetSubtitle").textContent =
+          `${state.sheetTitle} • ${state.students.length} Students • ${state.records.length} Attendance Records`;
+        document.getElementById("dashDate").value = state.dashDate;
+        document.getElementById("dashDateBadge").textContent = state.dashDate;
+
+        const activeStudents = state.students.filter(s => s.isActive);
+        const boysActive = activeStudents.filter(s => s.gender === "MALE").length;
+        const girlsActive = activeStudents.filter(s => s.gender === "FEMALE").length;
+        const totalActiveFiltered = activeStudents.filter(s => matchesGender(s.gender, state.dashGender)).length;
+
+        const dayAllRecords = state.records.filter(r => r.date === state.dashDate);
+        const dayRecords = dayAllRecords.filter(r => matchesGender(state.studentMap.get(r.studentId)?.gender || "UNSPECIFIED", state.dashGender));
+
+        const presentCount = dayRecords.filter(r => r.status === "PRESENT").length;
+        const absentCount = dayRecords.filter(r => r.status === "ABSENT").length;
+        const totalEntries = presentCount + absentCount;
+        const pct = totalEntries > 0 ? ((presentCount / totalEntries) * 100).toFixed(1) : "0.0";
+
+        const boysP = dayAllRecords.filter(r => state.studentMap.get(r.studentId)?.gender === "MALE" && r.status === "PRESENT").length;
+        const boysA = dayAllRecords.filter(r => state.studentMap.get(r.studentId)?.gender === "MALE" && r.status === "ABSENT").length;
+        const girlsP = dayAllRecords.filter(r => state.studentMap.get(r.studentId)?.gender === "FEMALE" && r.status === "PRESENT").length;
+        const girlsA = dayAllRecords.filter(r => state.studentMap.get(r.studentId)?.gender === "FEMALE" && r.status === "ABSENT").length;
+        const submittedSessions = new Set(dayRecords.map(r => r.activity)).size;
+
+        document.getElementById("dashKpiGrid").innerHTML = `
+          <div class="kpi">
+            <div class="kpi-label">Active Students</div>
+            <div class="kpi-val text-primary">${totalActiveFiltered}</div>
+            <div class="kpi-sub">
+              <span>Boys: <strong>${boysActive}</strong></span>
+              <span>Girls: <strong>${girlsActive}</strong></span>
+            </div>
+          </div>
+         
+         
+         
+          </div>
+          <div class="kpi">
+            <div class="kpi-label">Attendance Rate</div>
+            <div class="kpi-val">${pct}%</div>
+            <div class="kpi-sub">
+              <span>Sessions Recorded: <strong>${submittedSessions} / ${state.activities.length}</strong></span>
+            </div>
+          </div>
+        `;
+
+        // Clickable Activity Cards with Clipart
+        document.getElementById("dashActivitiesGrid").innerHTML = state.activities.map(act => {
+          const actRecs = dayRecords.filter(r => r.activity === act);
+          const p = actRecs.filter(r => r.status === "PRESENT").length;
+          const a = actRecs.filter(r => r.status === "ABSENT").length;
+          const t = p + a;
+          const actPct = t > 0 ? Math.round((p / t) * 100) : 0;
+          const isSel = state.dashSelectedActivity === act;
+
+          return `
+            <div class="act-card ${isSel ? "selected" : ""}" role="button" tabindex="0" data-activity="${esc(act)}">
+              <div class="act-head">
+                <div class="act-title-wrap">
+                  ${getActivityClipart(act, "clipart-lg")}
+                  <span class="act-title">${esc(act)}</span>
+                </div>
+                <span class="act-pct">${t > 0 ? `${actPct}%` : "No data"}</span>
+              </div>
+              <div class="act-bar">
+                <div class="act-bar-fill" style="width:${actPct}%;"></div>
+              </div>
+              <div class="act-badges">
+                <button type="button" class="act-chip present" data-activity="${esc(act)}" data-quick-status="PRESENT">
+                  ✓ Present: ${p}
+                </button>
+                <button type="button" class="act-chip absent" data-activity="${esc(act)}" data-quick-status="ABSENT">
+                  ✕ Absent: ${a}
+                </button>
+              </div>
+              <div class="act-hint">
+                <span>${t} total marked</span>
+                <span>${isSel ? "Viewing list ▼" : "Click to filter →"}</span>
+              </div>
+            </div>
+          `;
+        }).join("");
+
+        renderDashboardActivityDetail();
+      }
+
+      function getDashDetailFilteredRows() {
+        if (!state.dashSelectedActivity) return { all: [], present: [], absent: [], shown: [] };
+        const q = state.dashDetailSearch.trim().toLowerCase();
+        const base = state.records
+          .filter(r => {
+            if (r.date !== state.dashDate || r.activity !== state.dashSelectedActivity) return false;
+            const st = state.studentMap.get(r.studentId);
+            if (!matchesGender(st?.gender || "UNSPECIFIED", state.dashGender)) return false;
+            const name = (st?.name || r.studentName || "").toLowerCase();
+            if (q && !name.includes(q) && !r.studentId.toLowerCase().includes(q)) return false;
+            return true;
+          })
+          .map(r => {
+            const st = state.studentMap.get(r.studentId);
+            return {
+              studentId: r.studentId,
+              studentName: st?.name || r.studentName || r.studentId,
+              course: st?.course || r.course || "—",
+              gender: st?.gender || "UNSPECIFIED",
+              status: r.status
+            };
+          })
+          .sort((a, b) => a.studentName.localeCompare(b.studentName));
+
+        const present = base.filter(x => x.status === "PRESENT");
+        const absent = base.filter(x => x.status === "ABSENT");
+        const shown = state.dashDetailStatus === "PRESENT" ? present
+          : state.dashDetailStatus === "ABSENT" ? absent : base;
+
+        return { all: base, present, absent, shown };
+      }
+
+      function renderDashboardActivityDetail() {
+        const panel = document.getElementById("dashActivityDetailPanel");
+        if (!state.dashSelectedActivity) {
+          panel.classList.remove("open");
+          return;
+        }
+        panel.classList.add("open");
+
+        const { all, present, absent, shown } = getDashDetailFilteredRows();
+        const genderLabel = state.dashGender === "MALE" ? "Boys" : state.dashGender === "FEMALE" ? "Girls" : "All Students";
+
+        document.getElementById("dashDetailTitle").innerHTML =
+          `${getActivityClipart(state.dashSelectedActivity, "clipart-md")} <span>${esc(state.dashSelectedActivity)} — Attendance List</span>`;
+        document.getElementById("dashDetailSub").textContent =
+          `Date: ${state.dashDate} • Filter: ${genderLabel} • Showing ${shown.length} of ${all.length} students`;
+
+        const allBtn = document.getElementById("dashStatusAllBtn");
+        const pBtn = document.getElementById("dashStatusPresentBtn");
+        const aBtn = document.getElementById("dashStatusAbsentBtn");
+        allBtn.textContent = `All (${all.length})`;
+        pBtn.textContent = `Present (${present.length})`;
+        aBtn.textContent = `Absent (${absent.length})`;
+        allBtn.className = "pill" + (state.dashDetailStatus === "ALL" ? " active" : "");
+        pBtn.className = "pill" + (state.dashDetailStatus === "PRESENT" ? " active-green" : "");
+        aBtn.className = "pill" + (state.dashDetailStatus === "ABSENT" ? " active-red" : "");
+
+        const tbody = document.getElementById("dashDetailBody");
+        if (!shown.length) {
+          const word = state.dashDetailStatus === "ALL" ? "" : `${state.dashDetailStatus.toLowerCase()} `;
+          tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--muted);">No ${word}students found for ${esc(state.dashSelectedActivity)} on ${esc(state.dashDate)}.</td></tr>`;
+          return;
+        }
+
+        tbody.innerHTML = shown.map((row, idx) => `
+          <tr>
+            <td>${idx + 1}</td>
+            <td><span class="student-name">${esc(row.studentName)}</span></td>
+            <td><span class="student-id">${esc(row.studentId)}</span></td>
+            <td>${esc(row.course)}</td>
+            <td>${genderBadgeHtml(row.gender) || "—"}</td>
+            <td>${statusBadgeHtml(row.status)}</td>
+          </tr>
+        `).join("");
+      }
+
+      /* ==================== RENDER: REPORTS (PREVIOUS STYLE) ==================== */
+      function syncActivityDropdowns() {
+        const daySel = document.getElementById("repDayActivity");
+        const monthSel = document.getElementById("repMonthActivity");
+        const sumSel = document.getElementById("repSumActivity");
+
+        const opts = state.activities.map(a => `<option value="${esc(a)}">${esc(a)}</option>`).join("");
+        daySel.innerHTML = opts;
+        monthSel.innerHTML = opts;
+        sumSel.innerHTML = `<option value="ALL">All Activities</option>` + opts;
+
+        if (!state.activities.includes(state.repDayActivity)) state.repDayActivity = state.activities[0];
+        if (!state.activities.includes(state.repMonthActivity)) state.repMonthActivity = state.activities[0];
+        if (state.repSumActivity !== "ALL" && !state.activities.includes(state.repSumActivity)) state.repSumActivity = "ALL";
+
+        daySel.value = state.repDayActivity;
+        monthSel.value = state.repMonthActivity;
+        sumSel.value = state.repSumActivity;
+      }
+
+      function renderDayReport() {
+        document.getElementById("repDayDate").value = state.repDayDate;
+        document.getElementById("repDayActIcon").innerHTML = getActivityClipart(state.repDayActivity, "clipart-md");
+
+        const courseSet = new Set();
+        state.students.forEach(s => { if (s.course) courseSet.add(s.course); });
+        state.records.forEach(r => { if (r.course) courseSet.add(r.course); });
+        const courses = Array.from(courseSet).sort();
+        const courseSel = document.getElementById("repDayCourse");
+        courseSel.innerHTML = `<option value="ALL">All Courses</option>` +
+          courses.map(c => `<option value="${esc(c)}">${esc(c)}</option>`).join("");
+        if (state.repDayCourse !== "ALL" && !courses.includes(state.repDayCourse)) state.repDayCourse = "ALL";
+        courseSel.value = state.repDayCourse;
+
+        const q = state.repDaySearch.trim().toLowerCase();
+        const sessionRecs = state.records.filter(r => r.date === state.repDayDate && r.activity === state.repDayActivity);
+
+        const searchCourseFiltered = sessionRecs.filter(r => {
+          const st = state.studentMap.get(r.studentId);
+          const course = st?.course || r.course || "";
+          const name = (st?.name || r.studentName || "").toLowerCase();
+          if (state.repDayCourse !== "ALL" && course.toLowerCase() !== state.repDayCourse.toLowerCase()) return false;
+          if (q && !name.includes(q) && !r.studentId.toLowerCase().includes(q)) return false;
+          return true;
+        });
+
+        const boysP = searchCourseFiltered.filter(r => state.studentMap.get(r.studentId)?.gender === "MALE" && r.status === "PRESENT").length;
+        const boysA = searchCourseFiltered.filter(r => state.studentMap.get(r.studentId)?.gender === "MALE" && r.status === "ABSENT").length;
+        const girlsP = searchCourseFiltered.filter(r => state.studentMap.get(r.studentId)?.gender === "FEMALE" && r.status === "PRESENT").length;
+        const girlsA = searchCourseFiltered.filter(r => state.studentMap.get(r.studentId)?.gender === "FEMALE" && r.status === "ABSENT").length;
+
+        const genderFiltered = searchCourseFiltered
+          .filter(r => matchesGender(state.studentMap.get(r.studentId)?.gender || "UNSPECIFIED", state.repDayGender))
+          .map(r => {
+            const st = state.studentMap.get(r.studentId);
+            return {
+              studentId: r.studentId,
+              studentName: st?.name || r.studentName || r.studentId,
+              course: st?.course || r.course || "—",
+              gender: st?.gender || "UNSPECIFIED",
+              status: r.status
+            };
+          })
+          .sort((a, b) => a.studentName.localeCompare(b.studentName));
+
+        const presentRows = genderFiltered.filter(x => x.status === "PRESENT");
+        const absentRows = genderFiltered.filter(x => x.status === "ABSENT");
+        const total = presentRows.length + absentRows.length;
+        const pct = total > 0 ? ((presentRows.length / total) * 100).toFixed(1) : "0.0";
+
+        // Update chip counts & active styling
+        const allChip = document.getElementById("repDayAllChip");
+        const pChip = document.getElementById("repDayPresentChip");
+        const aChip = document.getElementById("repDayAbsentChip");
+        allChip.textContent = `All (${total})`;
+        pChip.textContent = `Present List (${presentRows.length})`;
+        aChip.textContent = `Absent List (${absentRows.length})`;
+        allChip.className = "pill" + (state.repDayStatus === "ALL" ? " active" : "");
+        pChip.className = "pill" + (state.repDayStatus === "PRESENT" ? " active-green" : "");
+        aChip.className = "pill" + (state.repDayStatus === "ABSENT" ? " active-red" : "");
+
+        document.getElementById("repDayKpis").innerHTML = `
+          <div class="kpi clickable" data-day-tile="ALL">
+            <div class="kpi-label">Total</div>
+            <div class="kpi-val text-primary">${total}</div>
+          </div>
+          <div class="kpi clickable ${state.repDayStatus === "PRESENT" ? "tint-active-green" : "tint-green"}" data-day-tile="PRESENT">
+            <div class="kpi-label">Present</div>
+            <div class="kpi-val text-green">${presentRows.length}</div>
+          </div>
+          <div class="kpi clickable ${state.repDayStatus === "ABSENT" ? "tint-active-red" : "tint-red"}" data-day-tile="ABSENT">
+            <div class="kpi-label">Absent</div>
+            <div class="kpi-val text-red">${absentRows.length}</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-label">Rate</div>
+            <div class="kpi-val">${pct}%</div>
+          </div>
+        `;
+
+        document.getElementById("repDayGenderSplit").innerHTML = sessionRecs.length ? `
+          <div class="kpi">
+            <div class="kpi-label">Boys (Pres / Abs)</div>
+            <div class="kpi-val text-primary">${boysP} / ${boysA}</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-label">Girls (Pres / Abs)</div>
+            <div class="kpi-val text-girl">${girlsP} / ${girlsA}</div>
+          </div>
+        ` : "";
+
+        const sectionsEl = document.getElementById("repDaySections");
+        if (!sessionRecs.length) {
+          sectionsEl.innerHTML = `<div class="empty-state">No attendance submitted for <strong>${esc(state.repDayDate)}</strong> (${esc(state.repDayActivity)}). Missing sessions are not counted as Absent.</div>`;
+          return;
+        }
+
+        const renderDayRows = (rows) => rows.map(r => `
+          <div class="report-row-card grid-day">
+            <div class="student-id">${esc(r.studentId)}</div>
+            <div>
+              <div class="student-name">${esc(r.studentName)}</div>
+              ${genderBadgeHtml(r.gender)}
+            </div>
+            <div style="font-size:13px;color:var(--muted);">${esc(r.course)}</div>
+            <div class="col-right">${statusBadgeHtml(r.status)}</div>
+          </div>
+        `).join("");
+
+        const tableHead = `
+          <div class="report-table-head grid-day">
+            <div>Student ID</div>
+            <div>Student Name</div>
+            <div>Course</div>
+            <div class="col-right">Status</div>
+          </div>
+        `;
+
+        let html = "";
+        if (state.repDayStatus !== "ABSENT") {
+          html += `<div class="report-section-title text-green">Present Students (${presentRows.length})</div>`;
+          html += tableHead;
+          html += presentRows.length
+            ? renderDayRows(presentRows)
+            : `<div class="empty-state">No present students match the filter.</div>`;
+        }
+        if (state.repDayStatus !== "PRESENT") {
+          html += `<div class="report-section-title text-red">Absent Students (${absentRows.length})</div>`;
+          html += tableHead;
+          html += absentRows.length
+            ? renderDayRows(absentRows)
+            : `<div class="empty-state">No absent students match the filter.</div>`;
+        }
+        sectionsEl.innerHTML = html;
+      }
+
+      function computeMonthReport() {
+        const ym = state.repMonth;
+        const validAllGender = state.records.filter(r => {
+          if (r.activity !== state.repMonthActivity) return false;
+          if (!r.date.startsWith(ym + "-")) return false;
+          return isEligibleOnDate(state.studentMap.get(r.studentId), r.date);
+        });
+
+        const boysP = validAllGender.filter(r => state.studentMap.get(r.studentId)?.gender === "MALE" && r.status === "PRESENT").length;
+        const boysA = validAllGender.filter(r => state.studentMap.get(r.studentId)?.gender === "MALE" && r.status === "ABSENT").length;
+        const girlsP = validAllGender.filter(r => state.studentMap.get(r.studentId)?.gender === "FEMALE" && r.status === "PRESENT").length;
+        const girlsA = validAllGender.filter(r => state.studentMap.get(r.studentId)?.gender === "FEMALE" && r.status === "ABSENT").length;
+
+        const genderRecs = validAllGender.filter(r => matchesGender(state.studentMap.get(r.studentId)?.gender || "UNSPECIFIED", state.repMonthGender));
+        const byStudent = new Map();
+        for (const r of genderRecs) {
+          if (!byStudent.has(r.studentId)) byStudent.set(r.studentId, []);
+          byStudent.get(r.studentId).push(r);
+        }
+
+        const allSummaries = [];
+        for (const [sid, list] of byStudent.entries()) {
+          const st = state.studentMap.get(sid);
+          const present = list.filter(x => x.status === "PRESENT").length;
+          const absent = list.filter(x => x.status === "ABSENT").length;
+          const sessions = present + absent;
+          if (!sessions) continue;
+          allSummaries.push({
+            studentId: sid,
+            studentName: st?.name || list[0].studentName || sid,
+            course: st?.course || list[0].course || "—",
+            gender: st?.gender || "UNSPECIFIED",
+            sessions,
+            present,
+            absent,
+            pct: (present / sessions) * 100
+          });
+        }
+
+        allSummaries.sort((a, b) => b.pct - a.pct || a.studentName.localeCompare(b.studentName));
+
+        const totP = allSummaries.reduce((s, r) => s + r.present, 0);
+        const totA = allSummaries.reduce((s, r) => s + r.absent, 0);
+        const totAll = totP + totA;
+        const overallPct = totAll > 0 ? (totP / totAll) * 100 : 0;
+
+        let highest = [], lowest = [];
+        if (allSummaries.length) {
+          const maxPct = Math.max(...allSummaries.map(x => x.pct));
+          const minPct = Math.min(...allSummaries.map(x => x.pct));
+          highest = allSummaries.filter(x => Math.abs(x.pct - maxPct) < 0.0001);
+          lowest = allSummaries.filter(x => Math.abs(x.pct - minPct) < 0.0001);
+        }
+
+        const q = state.repMonthSearch.trim().toLowerCase();
+        const filtered = allSummaries.filter(item => {
+          if (q && !item.studentName.toLowerCase().includes(q) && !item.studentId.toLowerCase().includes(q)) return false;
+          if (state.repMonthStatus === "PRESENT" && item.present === 0) return false;
+          if (state.repMonthStatus === "ABSENT" && item.absent === 0) return false;
+          return true;
+        });
+
+        return { filtered, totP, totA, overallPct, boysP, boysA, girlsP, girlsA, highest, lowest };
+      }
+
+      function renderMonthReport() {
+        document.getElementById("repMonthPicker").value = state.repMonth;
+        document.getElementById("repMonthActIcon").innerHTML = getActivityClipart(state.repMonthActivity, "clipart-md");
+
+        const data = computeMonthReport();
+
+        document.getElementById("repMonthKpis").innerHTML = `
+          <div class="kpi">
+            <div class="kpi-label">Overall % (${esc(state.repMonthActivity)})</div>
+            <div class="kpi-val text-primary">${data.overallPct.toFixed(1)}%</div>
+          </div>
+          <div class="kpi tint-green">
+            <div class="kpi-label">Present Recs</div>
+            <div class="kpi-val text-green">${data.totP}</div>
+          </div>
+          <div class="kpi tint-red">
+            <div class="kpi-label">Absent Recs</div>
+            <div class="kpi-val text-red">${data.totA}</div>
+          </div>
+        `;
+
+        document.getElementById("repMonthGenderSplit").innerHTML = `
+          <div class="kpi">
+            <div class="kpi-label">Boys (Pres / Abs)</div>
+            <div class="kpi-val text-primary">${data.boysP} / ${data.boysA}</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-label">Girls (Pres / Abs)</div>
+            <div class="kpi-val text-girl">${data.girlsP} / ${data.girlsA}</div>
+          </div>
+        `;
+
+        const hlEl = document.getElementById("repMonthHighlights");
+        if (data.filtered.length) {
+          const highStr = data.highest.map(x => `${esc(x.studentName)} (${x.pct.toFixed(1)}%)`).join(", ");
+          const lowStr = data.lowest.map(x => `${esc(x.studentName)} (${x.pct.toFixed(1)}%)`).join(", ");
+          hlEl.innerHTML = `
+            <div class="highlight-card high">
+              <div class="highlight-title text-green">Highest Attendance</div>
+              <div class="student-name" style="font-size:14px;">${highStr}</div>
+            </div>
+            <div class="highlight-card low">
+              <div class="highlight-title text-red">Lowest Attendance</div>
+              <div class="student-name" style="font-size:14px;">${lowStr}</div>
+            </div>
+          `;
+        } else {
+          hlEl.innerHTML = "";
+        }
+
+        const rowsEl = document.getElementById("repMonthRows");
+        if (!data.filtered.length) {
+          rowsEl.innerHTML = `<div class="empty-state">No recorded <strong>${esc(state.repMonthActivity)}</strong> sessions for <strong>${esc(state.repMonth)}</strong>.</div>`;
+          return;
+        }
+
+        rowsEl.innerHTML = data.filtered.map(item => `
+          <div class="report-row-card grid-month clickable" data-history-student="${esc(item.studentId)}">
+            <div class="student-id">${esc(item.studentId)}</div>
+            <div>
+              <div class="student-name">${esc(item.studentName)}</div>
+              ${genderBadgeHtml(item.gender)}
+            </div>
+            <div class="col-right" style="font-family:monospace;">${item.sessions}</div>
+            <div class="col-right text-green" style="font-family:monospace;font-weight:700;">${item.present}</div>
+            <div class="col-right text-red" style="font-family:monospace;font-weight:700;">${item.absent}</div>
+            <div class="col-right" style="font-family:monospace;font-weight:700;">${item.pct.toFixed(1)}%</div>
+          </div>
+        `).join("");
+      }
+
+      function renderSummaryReport() {
+        document.getElementById("repSumDate").value = state.repSumDate;
+
+        const filtered = state.records.filter(r => {
+          if (state.repSumDate && r.date !== state.repSumDate) return false;
+          if (state.repSumActivity !== "ALL" && r.activity !== state.repSumActivity) return false;
+          const g = state.studentMap.get(r.studentId)?.gender || "UNSPECIFIED";
+          return matchesGender(g, state.repSumGender);
+        });
+
+        const grouped = new Map();
+        for (const r of filtered) {
+          const key = `${r.date}||${r.activity}`;
+          if (!grouped.has(key)) grouped.set(key, { date: r.date, activity: r.activity, present: 0, absent: 0 });
+          const entry = grouped.get(key);
+          if (r.status === "PRESENT") entry.present++; else entry.absent++;
+        }
+
+        const rows = Array.from(grouped.values()).sort((a, b) => {
+          if (a.date !== b.date) return b.date.localeCompare(a.date);
+          return activitySortIndex(a.activity) - activitySortIndex(b.activity) || a.activity.localeCompare(b.activity);
+        });
+
+        const totP = rows.reduce((s, x) => s + x.present, 0);
+        const totA = rows.reduce((s, x) => s + x.absent, 0);
+        const tot = totP + totA;
+        const pct = tot > 0 ? ((totP / tot) * 100).toFixed(1) : "0.0";
+
+        document.getElementById("repSumKpis").innerHTML = `
+          <div class="kpi"><div class="kpi-label">Sessions</div><div class="kpi-val text-primary">${rows.length}</div></div>
+          <div class="kpi tint-green"><div class="kpi-label">Present</div><div class="kpi-val text-green">${totP}</div></div>
+          <div class="kpi tint-red"><div class="kpi-label">Absent</div><div class="kpi-val text-red">${totA}</div></div>
+          <div class="kpi"><div class="kpi-label">Rate</div><div class="kpi-val">${pct}%</div></div>
+        `;
+
+        const rowsEl = document.getElementById("repSumRows");
+        if (!rows.length) {
+          rowsEl.innerHTML = `<div class="empty-state">No attendance sessions match the selected filters.</div>`;
+          return;
+        }
+
+        rowsEl.innerHTML = rows.map(row => `
+          <div class="report-row-card grid-summary clickable" data-sum-date="${esc(row.date)}" data-sum-act="${esc(row.activity)}">
+            <div style="font-family:monospace;font-weight:600;">${esc(row.date)}</div>
+            <div style="display:flex;align-items:center;gap:8px;font-weight:600;">
+              ${getActivityClipart(row.activity, "clipart-sm")}
+              <span>${esc(row.activity)}</span>
+            </div>
+            <div class="col-right text-green" style="font-family:monospace;font-weight:700;">${row.present}</div>
+            <div class="col-right text-red" style="font-family:monospace;font-weight:700;">${row.absent}</div>
+            <div class="col-right" style="font-family:monospace;font-weight:700;">${row.present + row.absent}</div>
+          </div>
+        `).join("");
+      }
+
+      function openStudentHistoryModal(studentId) {
+        const st = state.studentMap.get(studentId);
+        const name = st?.name || studentId;
+        const items = state.records
+          .filter(r => r.studentId === studentId && r.date.startsWith(state.repMonth + "-") && r.activity === state.repMonthActivity && isEligibleOnDate(st, r.date))
+          .sort((a, b) => a.date.localeCompare(b.date));
+
+        const pres = items.filter(x => x.status === "PRESENT").length;
+        const abs = items.filter(x => x.status === "ABSENT").length;
+
+        document.getElementById("historyModalName").textContent = name;
+        document.getElementById("historyModalSub").textContent =
+          `ID: ${studentId} • ${state.repMonthActivity} (${state.repMonth}) • Present: ${pres}, Absent: ${abs}`;
+
+        document.getElementById("historyModalBody").innerHTML = items.length ? items.map(it => `
+          <tr>
+            <td style="font-family:monospace;">${esc(it.date)}</td>
+            <td><span style="display:inline-flex;align-items:center;gap:6px;">${getActivityClipart(it.activity, "clipart-sm")} ${esc(it.activity)}</span></td>
+            <td>${statusBadgeHtml(it.status)}</td>
+          </tr>
+        `).join("") : `<tr><td colspan="3" style="text-align:center;color:var(--muted);padding:18px;">No records found.</td></tr>`;
+
+        document.getElementById("historyModal").classList.add("open");
+      }
+
+      function renderAll() {
+        syncActivityDropdowns();
+        renderDashboard();
+        renderDayReport();
+        renderMonthReport();
+        renderSummaryReport();
+        updateDiagUI();
+      }
+
+      /* ==================== CSV EXPORT ==================== */
+      function downloadCsv(filename, headers, rows) {
+        const csvCell = v => `"${String(v ?? "").replace(/"/g, '""')}"`;
+        const lines = [headers.map(csvCell).join(",")];
+        for (const r of rows) lines.push(r.map(csvCell).join(","));
+        const blob = new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8;" });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = filename;
+        link.click();
+        URL.revokeObjectURL(link.href);
+      }
+
+      /* ==================== UI HELPERS ==================== */
+      function setSyncStatus(mode, text) {
+        const pill = document.getElementById("syncPill");
+        pill.className = `sync-pill ${mode}`;
+        document.getElementById("syncText").textContent = text;
+      }
+
+      function showError(msg) {
+        document.getElementById("errorBannerMsg").textContent = msg;
+        document.getElementById("errorBanner").classList.add("show");
+      }
+
+      function hideError() {
+        document.getElementById("errorBanner").classList.remove("show");
+      }
+
+      function updateDiagUI() {
+        document.getElementById("diagBox").textContent = state.diagnostics;
+      }
+
+      function setupPillGroup(containerId, attr, onSelect) {
+        const el = document.getElementById(containerId);
+        el.addEventListener("click", e => {
+          const btn = e.target.closest("button[" + attr + "]");
+          if (!btn) return;
+          el.querySelectorAll("button").forEach(b => b.classList.remove("active"));
+          btn.classList.add("active");
+          onSelect(btn.getAttribute(attr));
+        });
+      }
+
+      function switchReportSubtab(sub) {
+        state.activeSubtab = sub;
+        document.querySelectorAll(".report-subtab").forEach(b => b.classList.toggle("active", b.dataset.subtab === sub));
+        ["day", "month", "summary"].forEach(k => {
+          document.getElementById("subtab-" + k).classList.toggle("hidden", state.activeSubtab !== k);
+        });
+      }
+
+      function restartAutoSync() {
+        if (state.autoSyncTimer) clearInterval(state.autoSyncTimer);
+        state.autoSyncTimer = null;
+        if (state.autoSync) {
+          state.autoSyncTimer = setInterval(() => {
+            if (!document.hidden) syncFromSheet(false);
+          }, AUTO_SYNC_MS);
+        }
+      }
+
+      /* ==================== EVENTS ==================== */
+      document.querySelectorAll(".tab-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          state.activeTab = btn.dataset.tab;
+          document.querySelectorAll(".tab-btn").forEach(b => b.classList.toggle("active", b === btn));
+          document.getElementById("tab-dashboard").classList.toggle("hidden", state.activeTab !== "dashboard");
+          document.getElementById("tab-reports").classList.toggle("hidden", state.activeTab !== "reports");
+        });
+      });
+
+      document.getElementById("reportSubtabs").addEventListener("click", e => {
+        const btn = e.target.closest(".report-subtab");
+        if (btn) switchReportSubtab(btn.dataset.subtab);
+      });
+
+      // Dashboard events
+      document.getElementById("dashDate").addEventListener("change", e => {
+        if (!e.target.value) return;
+        state.dashDate = e.target.value;
+        state.dashDateUserPicked = true;
+        renderDashboard();
+      });
+
+      document.getElementById("dashLatestDateBtn").addEventListener("click", () => {
+        state.dashDate = getLatestSheetDate();
+        state.dashDateUserPicked = false;
+        renderDashboard();
+      });
+
+      setupPillGroup("dashGenderPills", "data-gender", g => {
+        state.dashGender = g;
+        renderDashboard();
+      });
+
+      document.getElementById("dashActivitiesGrid").addEventListener("click", e => {
+        const quickChip = e.target.closest("[data-quick-status]");
+        if (quickChip) {
+          e.stopPropagation();
+          state.dashSelectedActivity = quickChip.getAttribute("data-activity");
+          state.dashDetailStatus = quickChip.getAttribute("data-quick-status");
+          renderDashboard();
+          document.getElementById("dashActivityDetailPanel").scrollIntoView({ behavior: "smooth", block: "nearest" });
+          return;
+        }
+        const card = e.target.closest(".act-card");
+        if (!card) return;
+        const act = card.getAttribute("data-activity");
+        if (state.dashSelectedActivity === act) {
+          state.dashSelectedActivity = null;
+        } else {
+          state.dashSelectedActivity = act;
+          state.dashDetailStatus = "ALL";
+        }
+        renderDashboard();
+        if (state.dashSelectedActivity) {
+          document.getElementById("dashActivityDetailPanel").scrollIntoView({ behavior: "smooth", block: "nearest" });
+        }
+      });
+
+      document.getElementById("dashDetailStatusPills").addEventListener("click", e => {
+        const btn = e.target.closest("button[data-status]");
+        if (!btn) return;
+        state.dashDetailStatus = btn.getAttribute("data-status");
+        renderDashboardActivityDetail();
+      });
+
+      document.getElementById("dashDetailSearch").addEventListener("input", e => {
+        state.dashDetailSearch = e.target.value;
+        renderDashboardActivityDetail();
+      });
+
+      document.getElementById("dashDetailCloseBtn").addEventListener("click", () => {
+        state.dashSelectedActivity = null;
+        renderDashboard();
+      });
+
+      document.getElementById("dashDetailCsvBtn").addEventListener("click", () => {
+        if (!state.dashSelectedActivity) return;
+        const { shown } = getDashDetailFilteredRows();
+        downloadCsv(
+          `${state.dashSelectedActivity}_${state.dashDate}_${state.dashDetailStatus}.csv`,
+          ["Student Name", "Student ID", "Course", "Gender", "Status"],
+          shown.map(r => [r.studentName, r.studentId, r.course, r.gender, r.status])
+        );
+      });
+
+      // Day Report events
+      document.getElementById("repDayDate").addEventListener("change", e => {
+        if (!e.target.value) return;
+        state.repDayDate = e.target.value;
+        state.repDayDateUserPicked = true;
+        renderDayReport();
+      });
+      document.getElementById("repDayActivity").addEventListener("change", e => {
+        state.repDayActivity = e.target.value;
+        renderDayReport();
+      });
+      document.getElementById("repDayCourse").addEventListener("change", e => {
+        state.repDayCourse = e.target.value;
+        renderDayReport();
+      });
+      document.getElementById("repDaySearch").addEventListener("input", e => {
+        state.repDaySearch = e.target.value;
+        renderDayReport();
+      });
+      setupPillGroup("repDayGenderPills", "data-gender", g => {
+        state.repDayGender = g;
+        renderDayReport();
+      });
+      document.getElementById("repDayStatusPills").addEventListener("click", e => {
+        const btn = e.target.closest("button[data-status]");
+        if (!btn) return;
+        state.repDayStatus = btn.getAttribute("data-status");
+        renderDayReport();
+      });
+      document.getElementById("repDayKpis").addEventListener("click", e => {
+        const tile = e.target.closest("[data-day-tile]");
+        if (!tile) return;
+        const target = tile.getAttribute("data-day-tile");
+        state.repDayStatus = (state.repDayStatus === target && target !== "ALL") ? "ALL" : target;
+        renderDayReport();
+      });
+      document.getElementById("repDayPrintBtn").addEventListener("click", () => window.print());
+      document.getElementById("repDayCsvBtn").addEventListener("click", () => {
+        const q = state.repDaySearch.trim().toLowerCase();
+        const rows = state.records
+          .filter(r => r.date === state.repDayDate && r.activity === state.repDayActivity)
+          .filter(r => {
+            const st = state.studentMap.get(r.studentId);
+            const course = st?.course || r.course || "";
+            const name = (st?.name || r.studentName || "").toLowerCase();
+            if (!matchesGender(st?.gender || "UNSPECIFIED", state.repDayGender)) return false;
+            if (state.repDayStatus !== "ALL" && r.status !== state.repDayStatus) return false;
+            if (state.repDayCourse !== "ALL" && course.toLowerCase() !== state.repDayCourse.toLowerCase()) return false;
+            if (q && !name.includes(q) && !r.studentId.toLowerCase().includes(q)) return false;
+            return true;
+          })
+          .map(r => {
+            const st = state.studentMap.get(r.studentId);
+            return [r.studentId, st?.name || r.studentName, st?.course || r.course || "", st?.gender || "", r.status];
+          });
+        downloadCsv(`DayReport_${state.repDayActivity}_${state.repDayDate}.csv`, ["Student ID", "Student Name", "Course", "Gender", "Status"], rows);
+      });
+
+      // Month Report events
+      document.getElementById("repMonthPicker").addEventListener("change", e => {
+        if (!e.target.value) return;
+        state.repMonth = e.target.value;
+        state.repMonthUserPicked = true;
+        renderMonthReport();
+      });
+      document.getElementById("repMonthActivity").addEventListener("change", e => {
+        state.repMonthActivity = e.target.value;
+        renderMonthReport();
+      });
+      document.getElementById("repMonthSearch").addEventListener("input", e => {
+        state.repMonthSearch = e.target.value;
+        renderMonthReport();
+      });
+      setupPillGroup("repMonthGenderPills", "data-gender", g => {
+        state.repMonthGender = g;
+        renderMonthReport();
+      });
+      setupPillGroup("repMonthStatusPills", "data-status", s => {
+        state.repMonthStatus = s;
+        renderMonthReport();
+      });
+      document.getElementById("repMonthRows").addEventListener("click", e => {
+        const row = e.target.closest("[data-history-student]");
+        if (row) openStudentHistoryModal(row.getAttribute("data-history-student"));
+      });
+      document.getElementById("repMonthPrintBtn").addEventListener("click", () => window.print());
+      document.getElementById("repMonthCsvBtn").addEventListener("click", () => {
+        const { filtered } = computeMonthReport();
+        downloadCsv(
+          `MonthReport_${state.repMonthActivity}_${state.repMonth}.csv`,
+          ["Student ID", "Student Name", "Course", "Gender", "Sessions", "Present", "Absent", "Percentage"],
+          filtered.map(r => [r.studentId, r.studentName, r.course, r.gender, r.sessions, r.present, r.absent, r.pct.toFixed(1) + "%"])
+        );
+      });
+
+      // Summary events
+      document.getElementById("repSumDate").addEventListener("change", e => {
+        state.repSumDate = e.target.value;
+        renderSummaryReport();
+      });
+      document.getElementById("repSumClearDateBtn").addEventListener("click", () => {
+        state.repSumDate = "";
+        renderSummaryReport();
+      });
+      document.getElementById("repSumActivity").addEventListener("change", e => {
+        state.repSumActivity = e.target.value;
+        renderSummaryReport();
+      });
+      setupPillGroup("repSumGenderPills", "data-gender", g => {
+        state.repSumGender = g;
+        renderSummaryReport();
+      });
+      document.getElementById("repSumRows").addEventListener("click", e => {
+        const row = e.target.closest("[data-sum-date]");
+        if (!row) return;
+        state.repDayDate = row.getAttribute("data-sum-date");
+        state.repDayDateUserPicked = true;
+        state.repDayActivity = row.getAttribute("data-sum-act");
+        state.repDayStatus = "ALL";
+        syncActivityDropdowns();
+        renderDayReport();
+        switchReportSubtab("day");
+      });
+
+      // History Modal
+      const historyModal = document.getElementById("historyModal");
+      document.getElementById("closeHistoryBtn").addEventListener("click", () => historyModal.classList.remove("open"));
+      historyModal.addEventListener("click", e => { if (e.target === historyModal) historyModal.classList.remove("open"); });
+
+      // Topbar & Settings Modal
+      document.getElementById("syncNowBtn").addEventListener("click", () => syncFromSheet(true));
+      document.getElementById("autoSyncBtn").addEventListener("click", e => {
+        state.autoSync = !state.autoSync;
+        e.target.textContent = `Auto-Sync: ${state.autoSync ? "ON" : "OFF"}`;
+        restartAutoSync();
+      });
+
+      const settingsModal = document.getElementById("settingsModal");
+      const openSettings = () => {
+        document.getElementById("scriptUrlInput").value = state.scriptUrl;
+        updateDiagUI();
+        settingsModal.classList.add("open");
+      };
+      document.getElementById("settingsBtn").addEventListener("click", openSettings);
+      document.getElementById("openDiagFromBanner").addEventListener("click", openSettings);
+      document.getElementById("closeSettingsBtn").addEventListener("click", () => settingsModal.classList.remove("open"));
+      settingsModal.addEventListener("click", e => { if (e.target === settingsModal) settingsModal.classList.remove("open"); });
+
+      document.getElementById("resetDefaultUrlBtn").addEventListener("click", () => {
+        document.getElementById("scriptUrlInput").value = DEFAULT_SCRIPT_URL;
+      });
+      document.getElementById("saveSettingsBtn").addEventListener("click", () => {
+        const nextUrl = document.getElementById("scriptUrlInput").value.trim() || DEFAULT_SCRIPT_URL;
+        state.scriptUrl = nextUrl;
+        localStorage.setItem(STORAGE_URL_KEY, nextUrl);
+        settingsModal.classList.remove("open");
+        syncFromSheet(true);
+      });
+
+      document.addEventListener("visibilitychange", () => {
+        if (!document.hidden && state.autoSync) syncFromSheet(false);
+      });
+
+      /* ==================== INIT ==================== */
+      loadCache();
+      renderAll();
+      syncFromSheet(false);
+      restartAutoSync();
+    })();
+  </script>
+</body>
+</html>
