@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>GSC Student Manager — Dashboard &amp; Reports</title>
+  <title>GSC Student Manager — Live Today Meal Attendance &amp; Reports</title>
   <style>
     :root {
       --bg: #f4f7fb;
@@ -19,6 +19,8 @@
       --green-soft: #dcfce7;
       --red: #b91c1c;
       --red-soft: #fee2e2;
+      --amber: #b45309;
+      --amber-soft: #fef3c7;
       --boy: #1d4ed8;
       --boy-soft: #dbeafe;
       --girl: #be185d;
@@ -37,7 +39,7 @@
       line-height: 1.45;
     }
 
-    /* Simple, clean, highly readable font for Student Names everywhere */
+    /* Simple, clean, readable font for Student Names everywhere */
     .student-name {
       font-family: Arial, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
       font-size: 15px;
@@ -178,6 +180,14 @@
 
     .btn-primary:hover { background: var(--primary-hover); }
 
+    .btn-excel {
+      background: #15803d;
+      border-color: #15803d;
+      color: #fff;
+    }
+
+    .btn-excel:hover { background: #166534; }
+
     .btn-sm {
       padding: 6px 10px;
       font-size: 12px;
@@ -201,7 +211,7 @@
 
     /* Main Tabs */
     .tabs-bar {
-      max-width: 1180px;
+      max-width: 1200px;
       margin: 16px auto 0;
       padding: 0 16px;
       display: flex;
@@ -231,7 +241,7 @@
     }
 
     .container {
-      max-width: 1180px;
+      max-width: 1200px;
       margin: 14px auto 40px;
       padding: 0 16px;
     }
@@ -253,6 +263,71 @@
       margin: 0;
       font-size: 17px;
       font-weight: 700;
+    }
+
+    /* Running Day Real-Time Banner */
+    .running-banner {
+      background: linear-gradient(135deg, #eff6ff 0%, #f0fdf4 100%);
+      border: 1px solid #bfdbfe;
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .live-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #16a34a;
+      color: #fff;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      text-transform: uppercase;
+    }
+
+    .live-badge.past { background: #475569; }
+
+    .live-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #fff;
+      animation: pulse 1.2s infinite;
+    }
+
+    .live-clock {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 13px;
+      font-weight: 700;
+      color: #1e3a8a;
+      background: #ffffff;
+      border: 1px solid #bfdbfe;
+      padding: 3px 9px;
+      border-radius: 8px;
+    }
+
+    .running-now-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 10.5px;
+      font-weight: 800;
+      text-transform: uppercase;
+      background: var(--amber-soft);
+      color: var(--amber);
+      border: 1px solid #fcd34d;
+      padding: 2px 7px;
+      border-radius: 999px;
     }
 
     .banner-err {
@@ -289,6 +364,7 @@
 
     .pill-group {
       display: inline-flex;
+      flex-wrap: wrap;
       background: var(--surface-2);
       border: 1px solid var(--border);
       border-radius: 10px;
@@ -316,6 +392,7 @@
 
     .pill.active-green { background: var(--green); color: #fff; }
     .pill.active-red { background: var(--red); color: #fff; }
+    .pill.active-amber { background: #d97706; color: #fff; }
 
     /* KPI / Stat Tiles */
     .kpi-grid {
@@ -381,7 +458,7 @@
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
       gap: 12px;
-      margin-top: 14px;
+      margin-top: 12px;
     }
 
     .act-card {
@@ -393,6 +470,11 @@
       transition: all 0.16s ease;
       text-align: left;
       width: 100%;
+    }
+
+    .act-card.running {
+      border-color: #f59e0b;
+      background: #fffbeb;
     }
 
     .act-card:hover {
@@ -497,18 +579,20 @@
       font-weight: 600;
     }
 
-    /* Dashboard Clicked Activity Detail Panel */
-    .detail-panel {
+    /* Dashboard Today Student Meal Attendance Panel */
+    .today-panel {
       margin-top: 16px;
       background: var(--surface);
-      border: 2px solid var(--primary);
+      border: 2px solid #bfdbfe;
       border-radius: var(--radius);
       padding: 18px;
-      box-shadow: 0 8px 24px rgba(29, 78, 216, 0.1);
-      display: none;
+      box-shadow: var(--shadow);
     }
 
-    .detail-panel.open { display: block; }
+    .today-panel.single-focus {
+      border-color: var(--primary);
+      box-shadow: 0 8px 24px rgba(29, 78, 216, 0.12);
+    }
 
     .detail-header {
       display: flex;
@@ -536,7 +620,22 @@
       margin-top: 2px;
     }
 
-    /* Classic Report Style (Matching Android ReportsScreen) */
+    .info-note {
+      background: #f8fafc;
+      border: 1px dashed #cbd5e1;
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 13px;
+      color: #475569;
+      margin-bottom: 12px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    /* Classic Report Style */
     .report-tabbar {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -635,15 +734,8 @@
       border: 1px solid transparent;
     }
 
-    .highlight-card.high {
-      background: #f0fdf4;
-      border-color: #86efac;
-    }
-
-    .highlight-card.low {
-      background: #fef2f2;
-      border-color: #fca5a5;
-    }
+    .highlight-card.high { background: #f0fdf4; border-color: #86efac; }
+    .highlight-card.low { background: #fef2f2; border-color: #fca5a5; }
 
     .highlight-title {
       font-size: 12px;
@@ -652,7 +744,7 @@
       margin-bottom: 4px;
     }
 
-    /* Tables (used in Dashboard Detail panel & Student History modal) */
+    /* Tables */
     .table-wrap {
       width: 100%;
       overflow-x: auto;
@@ -697,6 +789,7 @@
 
     .badge-present { background: var(--green-soft); color: var(--green); }
     .badge-absent { background: var(--red-soft); color: var(--red); }
+    .badge-pending { background: #f1f5f9; color: #64748b; }
     .badge-boy { background: var(--boy-soft); color: var(--boy); }
     .badge-girl { background: var(--girl-soft); color: var(--girl); }
     .badge-neutral { background: #e2e8f0; color: #475569; }
@@ -768,7 +861,7 @@
     @media print {
       .topbar, .tabs-bar, .report-tabbar, .no-print { display: none !important; }
       body { background: #fff; }
-      .card, .kpi { box-shadow: none; }
+      .card, .kpi, .today-panel { box-shadow: none; }
     }
   </style>
 </head>
@@ -789,7 +882,7 @@
         <span class="sync-dot"></span>
         <span id="syncText">Connecting…</span>
       </span>
-      <button class="btn btn-sm" id="autoSyncBtn" title="Toggle 15-second live auto-refresh">Auto-Sync: ON</button>
+      <button class="btn btn-sm" id="autoSyncBtn" title="Toggle 10-second live auto-refresh">Live Auto-Sync: ON</button>
       <button class="btn btn-primary btn-sm" id="syncNowBtn">↻ Sync Now</button>
       <button class="btn btn-sm" id="settingsBtn">⚙ Sheet Link</button>
     </div>
@@ -810,22 +903,29 @@
 
     <!-- ===================== DASHBOARD TAB ===================== -->
     <section id="tab-dashboard">
-      <!-- Dashboard Controls -->
-      <div class="card">
-        <div class="filter-bar">
-          <div class="filter-group">
-            <span id="dashHeadingClipart"></span>
-            <label for="dashDate" style="font-size:13px;font-weight:700;color:var(--muted);">Date:</label>
-            <input type="date" id="dashDate" class="input" />
-            <button class="btn btn-sm" id="dashLatestDateBtn">Latest Sheet Date</button>
-          </div>
-
-          <div class="filter-group">
-            <div class="pill-group" id="dashGenderPills">
-              <button class="pill active" data-gender="ALL">All</button>
-              <button class="pill" data-gender="MALE">Boys</button>
-              <button class="pill" data-gender="FEMALE">Girls</button>
+      <!-- Real-Time Today / Running Day Header & Controls -->
+      <div class="running-banner">
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+          <span id="dashHeadingClipart"></span>
+          <div>
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+              <span class="live-badge" id="dashRunningBadge"><span class="live-dot"></span> Today • Running Day</span>
+              <strong id="dashReadableDate" style="font-size:15px;"></strong>
+              <span class="live-clock" id="liveClockDisplay">--:--:--</span>
             </div>
+            <div style="font-size:12.5px;color:var(--muted);margin-top:3px;">
+              Real-time today's running day meal &amp; activity student attendance (auto-updates every 10s)
+            </div>
+          </div>
+        </div>
+
+        <div class="filter-group">
+          <input type="date" id="dashDate" class="input" />
+          <button class="btn btn-primary btn-sm" id="dashTodayBtn">Today</button>
+          <div class="pill-group" id="dashGenderPills">
+            <button class="pill active" data-gender="ALL">All</button>
+            <button class="pill" data-gender="MALE">Boys</button>
+            <button class="pill" data-gender="FEMALE">Girls</button>
           </div>
         </div>
       </div>
@@ -833,13 +933,13 @@
       <!-- KPI Summary Cards -->
       <div class="kpi-grid section-gap" id="dashKpiGrid"></div>
 
-      <!-- Activity Breakdown (Click any activity to filter Present / Absent) -->
+      <!-- Today's Meals & Activities Cards -->
       <div class="card section-gap">
         <div class="filter-bar">
           <div>
-            <h2 class="section-heading" id="dailyActHeading">Daily Activities</h2>
+            <h2 class="section-heading">Today's Meals &amp; Daily Activities</h2>
             <div style="font-size:12.5px;color:var(--muted);margin-top:2px;">
-              Click <strong>Breakfast, Lunch, Dinner, Meditation, or Yoga</strong> (or its Present/Absent badge) to view and filter students
+              Click <strong>Breakfast, Lunch, Dinner, Meditation, or Yoga</strong> (or its Present / Absent badge) to filter students below
             </div>
           </div>
           <span class="badge badge-neutral" id="dashDateBadge"></span>
@@ -848,17 +948,23 @@
         <div class="activity-grid" id="dashActivitiesGrid"></div>
       </div>
 
-      <!-- Clicked Activity Present / Absent Filter Panel -->
-      <div class="detail-panel" id="dashActivityDetailPanel">
+      <!-- Always-Visible Today Running Day Meal Student Attendance Table -->
+      <div class="today-panel" id="dashTodayStudentPanel">
         <div class="detail-header">
           <div>
-            <h3 class="detail-title" id="dashDetailTitle">Activity Attendance</h3>
+            <h3 class="detail-title" id="dashDetailTitle">Today's Meal Student Attendance</h3>
             <div class="detail-sub" id="dashDetailSub"></div>
           </div>
           <div class="filter-group">
-            <button class="btn btn-sm" id="dashDetailCsvBtn">⬇ Export CSV</button>
-            <button class="btn btn-sm" id="dashDetailCloseBtn">✕ Close</button>
+            <button class="btn btn-sm hidden" id="dashShowAllMealsBtn">← All Today's Meals</button>
+            <button class="btn btn-excel btn-sm" id="dashDetailExcelBtn">⬇ Export Excel (.xlsx)</button>
+            <button class="btn btn-sm" id="dashDetailCsvBtn">⬇ CSV</button>
           </div>
+        </div>
+
+        <div class="info-note hidden" id="dashNoDataNote">
+          <span id="dashNoDataText"></span>
+          <button class="btn btn-sm" id="dashJumpLatestBtn">View Latest Sheet Date</button>
         </div>
 
         <div class="filter-bar" style="margin-bottom:12px;">
@@ -866,25 +972,17 @@
             <button class="pill active" data-status="ALL" id="dashStatusAllBtn">All (0)</button>
             <button class="pill" data-status="PRESENT" id="dashStatusPresentBtn">Present (0)</button>
             <button class="pill" data-status="ABSENT" id="dashStatusAbsentBtn">Absent (0)</button>
+            <button class="pill" data-status="PENDING" id="dashStatusPendingBtn">Not Marked (0)</button>
           </div>
 
           <div class="filter-group">
-            <input type="text" id="dashDetailSearch" class="input" placeholder="Search student name or ID…" style="min-width:210px;" />
+            <input type="text" id="dashDetailSearch" class="input" placeholder="Search student name or ID…" style="min-width:220px;" />
           </div>
         </div>
 
         <div class="table-wrap">
           <table>
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Student Name</th>
-                <th>Student ID</th>
-                <th>Course</th>
-                <th>Gender</th>
-                <th>Status</th>
-              </tr>
-            </thead>
+            <thead id="dashDetailHead"></thead>
             <tbody id="dashDetailBody"></tbody>
           </table>
         </div>
@@ -899,7 +997,7 @@
         <button class="report-subtab" data-subtab="summary" id="subtabBtnSummary"></button>
       </div>
 
-      <!-- DAY-WISE REPORT (Previous Stacked Card Style) -->
+      <!-- DAY-WISE REPORT -->
       <div id="subtab-day">
         <div class="card no-print">
           <div class="filter-bar" style="margin-bottom:10px;">
@@ -909,7 +1007,8 @@
               <button class="pill" data-gender="FEMALE">Girls</button>
             </div>
             <div class="filter-group">
-              <button class="btn btn-sm" id="repDayCsvBtn">⬇ Excel/CSV</button>
+              <button class="btn btn-excel btn-sm" id="repDayExcelBtn">⬇ Excel (.xlsx)</button>
+              <button class="btn btn-sm" id="repDayCsvBtn">⬇ CSV</button>
               <button class="btn btn-primary btn-sm" id="repDayPrintBtn">🖨 Print</button>
             </div>
           </div>
@@ -942,7 +1041,7 @@
         <div id="repDaySections"></div>
       </div>
 
-      <!-- MONTH-WISE REPORT (Previous Style + Highest/Lowest + Student History) -->
+      <!-- MONTH-WISE REPORT -->
       <div id="subtab-month" class="hidden">
         <div class="card no-print">
           <div class="filter-bar" style="margin-bottom:10px;">
@@ -952,7 +1051,8 @@
               <button class="pill" data-gender="FEMALE">Girls</button>
             </div>
             <div class="filter-group">
-              <button class="btn btn-sm" id="repMonthCsvBtn">⬇ Excel/CSV</button>
+              <button class="btn btn-excel btn-sm" id="repMonthExcelBtn">⬇ Excel (.xlsx)</button>
+              <button class="btn btn-sm" id="repMonthCsvBtn">⬇ CSV</button>
               <button class="btn btn-primary btn-sm" id="repMonthPrintBtn">🖨 Print</button>
             </div>
           </div>
@@ -995,7 +1095,7 @@
         <div id="repMonthRows"></div>
       </div>
 
-      <!-- SUMMARY REPORT (Previous Date-wise Summary Style) -->
+      <!-- SUMMARY REPORT -->
       <div id="subtab-summary" class="hidden">
         <div class="card no-print">
           <div class="filter-bar">
@@ -1008,6 +1108,7 @@
               <input type="date" id="repSumDate" class="input" title="Filter by specific date" />
               <button class="btn btn-sm" id="repSumClearDateBtn">All Dates</button>
               <select id="repSumActivity" class="select"></select>
+              <button class="btn btn-excel btn-sm" id="repSumExcelBtn">⬇ Excel (.xlsx)</button>
             </div>
           </div>
         </div>
@@ -1078,10 +1179,11 @@
   <script>
     (() => {
       const DEFAULT_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxpS3RhQw9EXi41JMEQJFKdgprClrbL44Lh7yQj6DKOBbA9D8mRXawmf8um351fy1z-1A/exec";
-      const STORAGE_URL_KEY = "gsc_web_script_url_v5";
-      const STORAGE_CACHE_KEY = "gsc_web_cache_v5";
+      const STORAGE_URL_KEY = "gsc_web_script_url_v7";
+      const STORAGE_CACHE_KEY = "gsc_web_cache_v7";
+      const MEAL_ACTIVITIES = ["Breakfast", "Lunch", "Dinner"];
       const CORE_ACTIVITIES = ["Breakfast", "Lunch", "Dinner", "Meditation", "Yoga"];
-      const AUTO_SYNC_MS = 15000;
+      const AUTO_SYNC_MS = 10000; // Real-time 10-second live sync
 
       /* ==================== COLORFUL SVG CLIPART LIBRARY ==================== */
       const CLIPART = {
@@ -1196,11 +1298,10 @@
         return `<span class="clipart ${sizeClass}" aria-hidden="true">${CLIPART[key]}</span>`;
       }
 
-      // Mount static clipart icons in header & tabs
       document.getElementById("brandClipart").innerHTML = CLIPART.brand;
       document.getElementById("mainTabDashboard").innerHTML = `<span class="clipart">${CLIPART.dashboard}</span><span>Dashboard</span>`;
       document.getElementById("mainTabReports").innerHTML = `<span class="clipart">${CLIPART.reports}</span><span>Reports</span>`;
-      document.getElementById("dashHeadingClipart").innerHTML = `<span class="clipart">${CLIPART.dashboard}</span>`;
+      document.getElementById("dashHeadingClipart").innerHTML = getActivityClipart("Lunch", "clipart-lg");
       document.getElementById("subtabBtnDay").innerHTML = `<span class="clipart">${CLIPART.daywise}</span><span>Day-wise</span>`;
       document.getElementById("subtabBtnMonth").innerHTML = `<span class="clipart">${CLIPART.monthwise}</span><span>Month-wise</span>`;
       document.getElementById("subtabBtnSummary").innerHTML = `<span class="clipart">${CLIPART.summary}</span><span>Summary</span>`;
@@ -1212,12 +1313,15 @@
         students: [],
         records: [],
         studentMap: new Map(),
+        studentMapLower: new Map(),
+        recordNameMap: new Map(),
         activities: [...CORE_ACTIVITIES],
 
         activeTab: "dashboard",
         activeSubtab: "day",
 
-        // Dashboard state
+        // Dashboard ALWAYS opens on Today (Real-Time Running Day)
+        lastKnownToday: todayIso(),
         dashDate: todayIso(),
         dashDateUserPicked: false,
         dashGender: "ALL",
@@ -1242,7 +1346,7 @@
         repMonthGender: "ALL",
         repMonthStatus: "ALL",
 
-        // Summary state (Date-wise Summary)
+        // Summary state
         repSumDate: "",
         repSumActivity: "ALL",
         repSumGender: "ALL",
@@ -1270,33 +1374,59 @@
         return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
       }
 
+      function formatReadableDate(iso) {
+        const parts = String(iso || "").split("-").map(Number);
+        if (parts.length !== 3) return iso;
+        const d = new Date(parts[0], parts[1] - 1, parts[2]);
+        if (isNaN(d.getTime())) return iso;
+        return d.toLocaleDateString(undefined, { weekday: "short", day: "numeric", month: "short", year: "numeric" });
+      }
+
+      function getCurrentRunningMeal() {
+        const hr = new Date().getHours();
+        if (hr >= 5 && hr < 11) return "Breakfast";
+        if (hr >= 11 && hr < 16) return "Lunch";
+        if (hr >= 17 && hr <= 23) return "Dinner";
+        return null;
+      }
+
       function formatLocalDate(d) {
         if (!(d instanceof Date) || isNaN(d.getTime())) return null;
         return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
       }
 
+      function formatUtcDate(d) {
+        if (!(d instanceof Date) || isNaN(d.getTime())) return null;
+        return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}-${String(d.getUTCDate()).padStart(2, "0")}`;
+      }
+
       function normalizeIsoDate(raw) {
         if (raw === null || raw === undefined) return null;
+        // Google Sheets numeric serial date (use UTC so negative timezones never shift date back by 1 day)
         if (typeof raw === "number" && isFinite(raw) && raw > 20000 && raw < 90000) {
-          return formatLocalDate(new Date(Math.round((raw - 25569) * 86400 * 1000)));
+          return formatUtcDate(new Date(Math.round((raw - 25569) * 86400 * 1000)));
         }
         const s = String(raw).trim();
         if (!s) return null;
 
+        // Google gviz Date(YYYY,M,D)
         const gviz = s.match(/^Date\((\d{4}),\s*(\d{1,2}),\s*(\d{1,2})/i);
         if (gviz) {
           return `${gviz[1]}-${String(Number(gviz[2]) + 1).padStart(2, "0")}-${String(Number(gviz[3])).padStart(2, "0")}`;
         }
 
-        const exact = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
-        if (exact) return `${exact[1]}-${exact[2].padStart(2, "0")}-${exact[3].padStart(2, "0")}`;
+        // Exact YYYY-MM-DD or YYYY/MM/DD (with optional space + time)
+        const ymd = s.match(/^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})(?:\s+\d{1,2}:\d{2}.*)?$/);
+        if (ymd) return `${ymd[1]}-${ymd[2].padStart(2, "0")}-${ymd[3].padStart(2, "0")}`;
 
+        // ISO timestamp with T (e.g. Apps Script UTC shift like 2026-11-21T18:30:00.000Z -> local 2026-11-22 in IST)
         if (/^\d{4}-\d{2}-\d{2}T/.test(s)) {
           const parsed = new Date(s);
           if (!isNaN(parsed.getTime())) return formatLocalDate(parsed);
         }
 
-        const dmy = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
+        // DD/MM/YYYY or DD-MM-YYYY (with optional time)
+        const dmy = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})(?:\s+\d{1,2}:\d{2}.*)?$/);
         if (dmy) {
           const a = Number(dmy[1]), b = Number(dmy[2]), y = dmy[3];
           const day = a > 12 ? a : (b > 12 ? b : a);
@@ -1304,10 +1434,11 @@
           return `${y}-${String(mon).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
         }
 
+        // Numeric string serial date
         if (/^\d{5}(\.\d+)?$/.test(s)) {
           const num = Number(s);
           if (num > 20000 && num < 90000) {
-            return formatLocalDate(new Date(Math.round((num - 25569) * 86400 * 1000)));
+            return formatUtcDate(new Date(Math.round((num - 25569) * 86400 * 1000)));
           }
         }
 
@@ -1346,6 +1477,12 @@
         return filter === "ALL" || gender === filter;
       }
 
+      function genderLabelText(gender) {
+        if (gender === "MALE") return "Boy";
+        if (gender === "FEMALE") return "Girl";
+        return "";
+      }
+
       function genderBadgeHtml(gender) {
         if (gender === "MALE") return `<span class="badge badge-boy">Boy</span>`;
         if (gender === "FEMALE") return `<span class="badge badge-girl">Girl</span>`;
@@ -1353,9 +1490,30 @@
       }
 
       function statusBadgeHtml(status) {
-        return status === "PRESENT"
-          ? `<span class="badge badge-present">Present</span>`
-          : `<span class="badge badge-absent">Absent</span>`;
+        if (status === "PRESENT") return `<span class="badge badge-present">Present</span>`;
+        if (status === "ABSENT") return `<span class="badge badge-absent">Absent</span>`;
+        return `<span class="badge badge-pending">—</span>`;
+      }
+
+      function statusPlainText(status) {
+        if (status === "PRESENT") return "Present";
+        if (status === "ABSENT") return "Absent";
+        return "Not Marked";
+      }
+
+      function getStudentObj(studentId) {
+        const key = String(studentId ?? "").trim();
+        return state.studentMap.get(key) || state.studentMapLower.get(key.toLowerCase()) || null;
+      }
+
+      function resolveStudentName(studentId, fallbackRecordName = "") {
+        const st = getStudentObj(studentId);
+        const recName = String(fallbackRecordName || "").trim();
+        const cachedRecName = state.recordNameMap.get(String(studentId ?? "").trim().toLowerCase()) || "";
+        if (st && st.name && st.name.trim() && st.name.trim() !== studentId) return st.name.trim();
+        if (recName && recName !== studentId) return recName;
+        if (cachedRecName && cachedRecName !== studentId) return cachedRecName;
+        return (st && st.name && st.name.trim()) || recName || String(studentId ?? "");
       }
 
       function isEligibleOnDate(student, recordDate) {
@@ -1376,6 +1534,24 @@
       function activitySortIndex(act) {
         const idx = CORE_ACTIVITIES.indexOf(act);
         return idx === -1 ? 999 : idx;
+      }
+
+      function rebuildStudentLookups() {
+        state.studentMap = new Map();
+        state.studentMapLower = new Map();
+        state.recordNameMap = new Map();
+        for (const s of state.students) {
+          const id = String(s.studentId ?? "").trim();
+          state.studentMap.set(id, s);
+          state.studentMapLower.set(id.toLowerCase(), s);
+        }
+        for (const r of state.records) {
+          const id = String(r.studentId ?? "").trim().toLowerCase();
+          const nm = String(r.studentName ?? "").trim();
+          if (nm && nm.toLowerCase() !== id) {
+            state.recordNameMap.set(id, nm);
+          }
+        }
       }
 
       /* ==================== PARSING SHEETS DATA ==================== */
@@ -1458,6 +1634,23 @@
         return "";
       }
 
+      function getStudentNameCell(row, headers, fallbackIdx) {
+        const direct = getCell(row, headers, fallbackIdx, [
+          "studentname", "name", "fullname", "student", "studentsname",
+          "nameofstudent", "studentfullname", "candidatename"
+        ]);
+        if (direct) return direct;
+        // Fallback: any header containing "name" (not sheet/course/activity)
+        for (const [hdr, idx] of Object.entries(headers)) {
+          if (hdr.includes("name") && !hdr.includes("sheet") && !hdr.includes("course") && !hdr.includes("activity")) {
+            const val = row[idx];
+            if (val !== null && val !== undefined && String(val).trim()) return String(val).trim();
+          }
+        }
+        const rawFallback = row[fallbackIdx];
+        return rawFallback === null || rawFallback === undefined ? "" : String(rawFallback).trim();
+      }
+
       function parseStudentsAndAttendance(rawStudentsMatrix, rawAttendanceMatrix) {
         const studentHeaderTokens = new Set(["studentid", "id", "studentname", "name", "course", "joiningdate", "status", "gender", "phone"]);
         const attHeaderTokens = new Set(["recordid", "date", "attendancedate", "activity", "studentid", "studentname", "attendancestatus", "status"]);
@@ -1472,7 +1665,7 @@
         const studentById = new Map();
         for (const row of sRows) {
           const studentId = getCell(row, sHeaders, 0, ["studentid", "id", "rollno", "rollnumber", "sid"]);
-          const name = getCell(row, sHeaders, 1, ["studentname", "name", "fullname", "student"]);
+          const name = getStudentNameCell(row, sHeaders, 1);
           if (!studentId || !name) continue;
           const course = getCell(row, sHeaders, 2, ["course", "program", "batch", "department"]);
           const joiningDate = normalizeIsoDate(getCell(row, sHeaders, 3, ["joiningdate", "joindate", "dateofjoining", "enrolleddate"])) || "";
@@ -1520,7 +1713,7 @@
 
           if (!CORE_ACTIVITIES.includes(activity)) extraActivities.add(activity);
 
-          const rawName = getCell(row, aHeaders, 4, ["studentname", "name", "fullname", "student"]);
+          const rawName = getStudentNameCell(row, aHeaders, 4);
           const status = normalizeStatus(getCell(row, aHeaders, 5, ["attendancestatus", "status", "presentabsent"]));
           const course = getCell(row, aHeaders, 6, ["course", "program", "batch"]);
           const updatedAt = Number(getCell(row, aHeaders, 7, ["updatedat", "timestamp"])) || 0;
@@ -1538,6 +1731,9 @@
               updatedAt: 0,
               gender: "UNSPECIFIED"
             });
+          } else if (rawName && rawName !== studentId) {
+            const ex = studentById.get(studentId);
+            if (!ex.name || ex.name === studentId) ex.name = rawName;
           }
 
           const matched = studentById.get(studentId);
@@ -1566,13 +1762,252 @@
         };
       }
 
-      /* ==================== NETWORK SYNC ==================== */
+      /* ==================== NATIVE EXCEL (.XLSX) + UTF-8 CSV EXPORT ==================== */
+      const CRC_TABLE = (() => {
+        const tbl = new Uint32Array(256);
+        for (let n = 0; n < 256; n++) {
+          let c = n;
+          for (let k = 0; k < 8; k++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+          tbl[n] = c >>> 0;
+        }
+        return tbl;
+      })();
+
+      function crc32(bytes) {
+        let c = 0xFFFFFFFF;
+        for (let i = 0; i < bytes.length; i++) c = CRC_TABLE[(c ^ bytes[i]) & 0xFF] ^ (c >>> 8);
+        return (c ^ 0xFFFFFFFF) >>> 0;
+      }
+
+      function buildZip(entries) {
+        const enc = new TextEncoder();
+        const localParts = [];
+        const centralParts = [];
+        let offset = 0;
+
+        for (const { name, data } of entries) {
+          const nameBytes = enc.encode(name);
+          const dataBytes = (data instanceof Uint8Array) ? data : enc.encode(String(data));
+          const crc = crc32(dataBytes);
+          const size = dataBytes.length;
+
+          const local = new Uint8Array(30 + nameBytes.length);
+          const lv = new DataView(local.buffer);
+          lv.setUint32(0, 0x04034b50, true);
+          lv.setUint16(4, 20, true);
+          lv.setUint16(6, 0x0800, true);
+          lv.setUint16(8, 0, true);
+          lv.setUint16(10, 0, true);
+          lv.setUint16(12, 0x5921, true);
+          lv.setUint32(14, crc, true);
+          lv.setUint32(18, size, true);
+          lv.setUint32(22, size, true);
+          lv.setUint16(26, nameBytes.length, true);
+          lv.setUint16(28, 0, true);
+          local.set(nameBytes, 30);
+          localParts.push(local, dataBytes);
+
+          const central = new Uint8Array(46 + nameBytes.length);
+          const cv = new DataView(central.buffer);
+          cv.setUint32(0, 0x02014b50, true);
+          cv.setUint16(4, 20, true);
+          cv.setUint16(6, 20, true);
+          cv.setUint16(8, 0x0800, true);
+          cv.setUint16(10, 0, true);
+          cv.setUint16(12, 0, true);
+          cv.setUint16(14, 0x5921, true);
+          cv.setUint32(16, crc, true);
+          cv.setUint32(20, size, true);
+          cv.setUint32(24, size, true);
+          cv.setUint16(28, nameBytes.length, true);
+          cv.setUint16(30, 0, true);
+          cv.setUint16(32, 0, true);
+          cv.setUint16(34, 0, true);
+          cv.setUint16(36, 0, true);
+          cv.setUint32(38, 0, true);
+          cv.setUint32(42, offset, true);
+          central.set(nameBytes, 46);
+          centralParts.push(central);
+
+          offset += local.length + size;
+        }
+
+        const centralSize = centralParts.reduce((s, p) => s + p.length, 0);
+        const eocd = new Uint8Array(22);
+        const ev = new DataView(eocd.buffer);
+        ev.setUint32(0, 0x06054b50, true);
+        ev.setUint16(4, 0, true);
+        ev.setUint16(6, 0, true);
+        ev.setUint16(8, entries.length, true);
+        ev.setUint16(10, entries.length, true);
+        ev.setUint32(12, centralSize, true);
+        ev.setUint32(16, offset, true);
+        ev.setUint16(20, 0, true);
+
+        return new Blob([...localParts, ...centralParts, eocd], {
+          type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        });
+      }
+
+      function xmlEsc(val) {
+        return String(val ?? "")
+          .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, "")
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&apos;");
+      }
+
+      function colLetter(colIdx) {
+        let n = colIdx + 1;
+        let out = "";
+        while (n > 0) {
+          const rem = (n - 1) % 26;
+          out = String.fromCharCode(65 + rem) + out;
+          n = Math.floor((n - 1) / 26);
+        }
+        return out;
+      }
+
+      function downloadExcel(filename, sheetName, headers, rows) {
+        const cleanSheet = String(sheetName || "Attendance").replace(/[\\\/\?\*\[\]:]/g, " ").trim().slice(0, 31) || "Attendance";
+        const allRows = [headers, ...rows];
+
+        // Auto-size columns so Student Name and all columns are wide and clearly readable in Excel
+        const widths = headers.map((h, ci) => {
+          let maxLen = String(h ?? "").length;
+          for (const r of rows) {
+            const len = String(r[ci] ?? "").length;
+            if (len > maxLen) maxLen = len;
+          }
+          const isNameCol = String(h).toLowerCase().includes("name");
+          return Math.min(45, Math.max(isNameCol ? 26 : 10, maxLen + 4));
+        });
+
+        const colsXml = `<cols>` + widths.map((w, i) =>
+          `<col min="${i + 1}" max="${i + 1}" width="${w}" customWidth="1"/>`
+        ).join("") + `</cols>`;
+
+        const rowsXml = allRows.map((row, rIdx) => {
+          const rowNum = rIdx + 1;
+          const isHeader = rIdx === 0;
+          const cells = row.map((val, cIdx) => {
+            const ref = `${colLetter(cIdx)}${rowNum}`;
+            const strVal = val === null || val === undefined ? "" : String(val);
+            if (!isHeader && typeof val === "number" && isFinite(val)) {
+              return `<c r="${ref}" t="n" s="0"><v>${val}</v></c>`;
+            }
+            let styleId = isHeader ? 1 : 0;
+            if (!isHeader) {
+              if (strVal === "Present") styleId = 2;
+              else if (strVal === "Absent") styleId = 3;
+            }
+            return `<c r="${ref}" t="inlineStr" s="${styleId}"><is><t xml:space="preserve">${xmlEsc(strVal)}</t></is></c>`;
+          }).join("");
+          return `<row r="${rowNum}"${isHeader ? ' ht="22" customHeight="1"' : ' ht="19" customHeight="1"'}>${cells}</row>`;
+        }).join("");
+
+        const sheetXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>` +
+          `<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">` +
+          colsXml +
+          `<sheetData>${rowsXml}</sheetData>` +
+          `</worksheet>`;
+
+        const stylesXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>` +
+          `<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">` +
+          `<fonts count="4">` +
+            `<font><sz val="11"/><color rgb="FF0F172A"/><name val="Arial"/></font>` +
+            `<font><b/><sz val="11"/><color rgb="FF1E3A8A"/><name val="Arial"/></font>` +
+            `<font><b/><sz val="11"/><color rgb="FF15803D"/><name val="Arial"/></font>` +
+            `<font><b/><sz val="11"/><color rgb="FFB91C1C"/><name val="Arial"/></font>` +
+          `</fonts>` +
+          `<fills count="3">` +
+            `<fill><patternFill patternType="none"/></fill>` +
+            `<fill><patternFill patternType="gray125"/></fill>` +
+            `<fill><patternFill patternType="solid"><fgColor rgb="FFDBEAFE"/><bgColor indexed="64"/></patternFill></fill>` +
+          `</fills>` +
+          `<borders count="2">` +
+            `<border><left/><right/><top/><bottom/><diagonal/></border>` +
+            `<border><left style="thin"><color rgb="FFE2E8F0"/></left><right style="thin"><color rgb="FFE2E8F0"/></right><top style="thin"><color rgb="FFE2E8F0"/></top><bottom style="thin"><color rgb="FFE2E8F0"/></bottom><diagonal/></border>` +
+          `</borders>` +
+          `<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>` +
+          `<cellXfs count="4">` +
+            `<xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyFont="1" applyBorder="1"><alignment vertical="center"/></xf>` +
+            `<xf numFmtId="0" fontId="1" fillId="2" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1"><alignment vertical="center"/></xf>` +
+            `<xf numFmtId="0" fontId="2" fillId="0" borderId="1" xfId="0" applyFont="1" applyBorder="1"><alignment vertical="center"/></xf>` +
+            `<xf numFmtId="0" fontId="3" fillId="0" borderId="1" xfId="0" applyFont="1" applyBorder="1"><alignment vertical="center"/></xf>` +
+          `</cellXfs>` +
+          `</styleSheet>`;
+
+        const workbookXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>` +
+          `<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">` +
+          `<sheets><sheet name="${xmlEsc(cleanSheet)}" sheetId="1" r:id="rId1"/></sheets>` +
+          `</workbook>`;
+
+        const wbRelsXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>` +
+          `<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">` +
+          `<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/>` +
+          `<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>` +
+          `</Relationships>`;
+
+        const rootRelsXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>` +
+          `<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">` +
+          `<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>` +
+          `</Relationships>`;
+
+        const contentTypesXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>` +
+          `<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">` +
+          `<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>` +
+          `<Default Extension="xml" ContentType="application/xml"/>` +
+          `<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>` +
+          `<Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>` +
+          `<Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>` +
+          `</Types>`;
+
+        const blob = buildZip([
+          { name: "[Content_Types].xml", data: contentTypesXml },
+          { name: "_rels/.rels", data: rootRelsXml },
+          { name: "xl/workbook.xml", data: workbookXml },
+          { name: "xl/_rels/workbook.xml.rels", data: wbRelsXml },
+          { name: "xl/styles.xml", data: stylesXml },
+          { name: "xl/worksheets/sheet1.xml", data: sheetXml }
+        ]);
+
+        const finalName = filename.endsWith(".xlsx") ? filename : `${filename}.xlsx`;
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = finalName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        setTimeout(() => URL.revokeObjectURL(link.href), 1500);
+      }
+
+      function downloadCsv(filename, headers, rows) {
+        const csvCell = v => `"${String(v ?? "").replace(/"/g, '""')}"`;
+        const lines = [headers.map(csvCell).join(",")];
+        for (const r of rows) lines.push(r.map(csvCell).join(","));
+        // UTF-8 BOM (\uFEFF) + CRLF so Microsoft Excel always displays Student Names cleanly
+        const blob = new Blob(["\uFEFF" + lines.join("\r\n")], { type: "text/csv;charset=utf-8;" });
+        const finalName = filename.endsWith(".csv") ? filename : `${filename}.csv`;
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = finalName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        setTimeout(() => URL.revokeObjectURL(link.href), 1500);
+      }
+
+      /* ==================== NETWORK SYNC (REAL-TIME NO-CACHE) ==================== */
       async function postSyncPage(url, page) {
         const body = JSON.stringify({
           action: "sync",
           includeData: true,
           page,
           pageSize: 500,
+          _ts: Date.now(),
           studentsSheet: "Students",
           attendanceSheet: "Attendance",
           editHistorySheet: "EditHistory",
@@ -1583,6 +2018,7 @@
         const resp = await fetch(url, {
           method: "POST",
           mode: "cors",
+          cache: "no-store",
           credentials: "omit",
           redirect: "follow",
           headers: { "Content-Type": "text/plain;charset=utf-8" },
@@ -1595,14 +2031,14 @@
       }
 
       async function getSyncUrl(url, withParams) {
-        let target = url;
-        if (withParams) {
-          const sep = url.includes("?") ? "&" : "?";
-          target = `${url}${sep}action=sync&includeData=true&page=1&pageSize=500&studentsSheet=Students&attendanceSheet=Attendance&editHistorySheet=EditHistory`;
-        }
+        const sep = url.includes("?") ? "&" : "?";
+        const target = withParams
+          ? `${url}${sep}action=sync&includeData=true&page=1&pageSize=500&studentsSheet=Students&attendanceSheet=Attendance&editHistorySheet=EditHistory&_ts=${Date.now()}`
+          : `${url}${sep}_ts=${Date.now()}`;
         const resp = await fetch(target, {
           method: "GET",
           mode: "cors",
+          cache: "no-store",
           credentials: "omit",
           redirect: "follow"
         });
@@ -1613,8 +2049,8 @@
       }
 
       async function fetchGvizTab(sheetId, tabName) {
-        const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(tabName)}`;
-        const resp = await fetch(url, { mode: "cors", credentials: "omit" });
+        const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(tabName)}&_ts=${Date.now()}`;
+        const resp = await fetch(url, { mode: "cors", cache: "no-store", credentials: "omit" });
         const text = await resp.text();
         const start = text.indexOf("{");
         const end = text.lastIndexOf("}");
@@ -1714,15 +2150,22 @@
           state.sheetTitle = title || "GSC Student Manager";
           state.students = parsed.students;
           state.records = parsed.records;
-          state.studentMap = new Map(parsed.students.map(s => [s.studentId, s]));
           state.activities = parsed.activities;
+          rebuildStudentLookups();
           state.lastSyncTime = new Date();
 
+          // Dashboard ALWAYS tracks real-time Today unless user manually chose a past date
+          const today = todayIso();
+          state.lastKnownToday = today;
+          if (!state.dashDateUserPicked) {
+            state.dashDate = today;
+          }
+
+          // Reports default to today if today has entries, otherwise latest date in sheet
           const latestDate = getLatestSheetDate();
-          const hasToday = state.records.some(r => r.date === todayIso());
-          if (!state.dashDateUserPicked) state.dashDate = hasToday ? todayIso() : latestDate;
-          if (!state.repDayDateUserPicked) state.repDayDate = hasToday ? todayIso() : latestDate;
-          if (!state.repMonthUserPicked) state.repMonth = (hasToday ? todayIso() : latestDate).slice(0, 7);
+          const hasToday = state.records.some(r => r.date === today);
+          if (!state.repDayDateUserPicked) state.repDayDate = hasToday ? today : latestDate;
+          if (!state.repMonthUserPicked) state.repMonth = (hasToday ? today : latestDate).slice(0, 7);
 
           try {
             localStorage.setItem(STORAGE_CACHE_KEY, JSON.stringify({
@@ -1734,16 +2177,17 @@
             }));
           } catch (_) {}
 
+          const todayCount = state.records.filter(r => r.date === today).length;
           logs.push(`Method: ${methodUsed}`);
           logs.push(`Raw rows -> Students: ${rawStudents.length}, Attendance: ${rawAttendance.length}`);
           logs.push(`Parsed -> Students: ${state.students.length}, Attendance: ${state.records.length}`);
-          logs.push(`Latest Date in Sheet: ${latestDate}`);
+          logs.push(`Real-Time Today: ${today} (${todayCount} records) | Latest Date in Sheet: ${latestDate}`);
           logs.push(`Student Headers: ${JSON.stringify(parsed.studentHeaders)}`);
           logs.push(`Attendance Headers: ${JSON.stringify(parsed.attendanceHeaders)}`);
           state.diagnostics = logs.join("\n");
 
           const timeStr = state.lastSyncTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
-          setSyncStatus("ok", `Synced ${timeStr}`);
+          setSyncStatus("ok", `Live ${timeStr}`);
           renderAll();
         } catch (err) {
           logs.push(`ERROR: ${err.message}`);
@@ -1765,42 +2209,79 @@
             state.sheetTitle = cached.sheetTitle || state.sheetTitle;
             state.students = cached.students;
             state.records = cached.records;
-            state.studentMap = new Map(cached.students.map(s => [s.studentId, s]));
             state.activities = Array.isArray(cached.activities) && cached.activities.length ? cached.activities : [...CORE_ACTIVITIES];
+            rebuildStudentLookups();
+            // Dashboard strictly stays on real-time Today
+            state.dashDate = todayIso();
             const latestDate = getLatestSheetDate();
             const hasToday = state.records.some(r => r.date === todayIso());
-            state.dashDate = hasToday ? todayIso() : latestDate;
-            state.repDayDate = state.dashDate;
-            state.repMonth = state.dashDate.slice(0, 7);
+            state.repDayDate = hasToday ? todayIso() : latestDate;
+            state.repMonth = state.repDayDate.slice(0, 7);
           }
         } catch (_) {}
       }
 
+      /* ==================== REAL-TIME CLOCK & MIDNIGHT ROLLOVER ==================== */
+      function updateLiveClock() {
+        const now = new Date();
+        const clockEl = document.getElementById("liveClockDisplay");
+        if (clockEl) {
+          clockEl.textContent = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+        }
+        const currentToday = todayIso();
+        if (currentToday !== state.lastKnownToday) {
+          state.lastKnownToday = currentToday;
+          if (!state.dashDateUserPicked) {
+            state.dashDate = currentToday;
+            renderDashboard();
+            syncFromSheet(false);
+          }
+        }
+      }
+
       /* ==================== RENDER: DASHBOARD ==================== */
       function renderDashboard() {
+        const today = todayIso();
+        const isToday = state.dashDate === today;
+        const runningMeal = isToday ? getCurrentRunningMeal() : null;
+
         document.getElementById("sheetSubtitle").textContent =
           `${state.sheetTitle} • ${state.students.length} Students • ${state.records.length} Attendance Records`;
         document.getElementById("dashDate").value = state.dashDate;
-        document.getElementById("dashDateBadge").textContent = state.dashDate;
+        document.getElementById("dashDateBadge").textContent = isToday ? `Today (${state.dashDate})` : state.dashDate;
+        document.getElementById("dashReadableDate").textContent = formatReadableDate(state.dashDate);
 
-        const activeStudents = state.students.filter(s => s.isActive);
+        const badge = document.getElementById("dashRunningBadge");
+        if (isToday) {
+          badge.className = "live-badge";
+          badge.innerHTML = `<span class="live-dot"></span> Today • Running Day`;
+        } else {
+          badge.className = "live-badge past";
+          badge.innerHTML = `Selected Date`;
+        }
+
+        const activeStudents = state.students.filter(s => s.isActive && isEligibleOnDate(s, state.dashDate));
         const boysActive = activeStudents.filter(s => s.gender === "MALE").length;
         const girlsActive = activeStudents.filter(s => s.gender === "FEMALE").length;
         const totalActiveFiltered = activeStudents.filter(s => matchesGender(s.gender, state.dashGender)).length;
 
         const dayAllRecords = state.records.filter(r => r.date === state.dashDate);
-        const dayRecords = dayAllRecords.filter(r => matchesGender(state.studentMap.get(r.studentId)?.gender || "UNSPECIFIED", state.dashGender));
+        const dayMealRecords = dayAllRecords.filter(r => MEAL_ACTIVITIES.includes(r.activity));
+        const dayRecords = dayAllRecords.filter(r => matchesGender(getStudentObj(r.studentId)?.gender || "UNSPECIFIED", state.dashGender));
+        const dayMealFiltered = dayMealRecords.filter(r => matchesGender(getStudentObj(r.studentId)?.gender || "UNSPECIFIED", state.dashGender));
 
-        const presentCount = dayRecords.filter(r => r.status === "PRESENT").length;
-        const absentCount = dayRecords.filter(r => r.status === "ABSENT").length;
-        const totalEntries = presentCount + absentCount;
-        const pct = totalEntries > 0 ? ((presentCount / totalEntries) * 100).toFixed(1) : "0.0";
+        const mealPresent = dayMealFiltered.filter(r => r.status === "PRESENT").length;
+        const mealAbsent = dayMealFiltered.filter(r => r.status === "ABSENT").length;
+        const mealTotal = mealPresent + mealAbsent;
+        const mealPct = mealTotal > 0 ? ((mealPresent / mealTotal) * 100).toFixed(1) : "0.0";
 
-        const boysP = dayAllRecords.filter(r => state.studentMap.get(r.studentId)?.gender === "MALE" && r.status === "PRESENT").length;
-        const boysA = dayAllRecords.filter(r => state.studentMap.get(r.studentId)?.gender === "MALE" && r.status === "ABSENT").length;
-        const girlsP = dayAllRecords.filter(r => state.studentMap.get(r.studentId)?.gender === "FEMALE" && r.status === "PRESENT").length;
-        const girlsA = dayAllRecords.filter(r => state.studentMap.get(r.studentId)?.gender === "FEMALE" && r.status === "ABSENT").length;
-        const submittedSessions = new Set(dayRecords.map(r => r.activity)).size;
+        const boysMealP = dayMealRecords.filter(r => getStudentObj(r.studentId)?.gender === "MALE" && r.status === "PRESENT").length;
+        const boysMealA = dayMealRecords.filter(r => getStudentObj(r.studentId)?.gender === "MALE" && r.status === "ABSENT").length;
+        const girlsMealP = dayMealRecords.filter(r => getStudentObj(r.studentId)?.gender === "FEMALE" && r.status === "PRESENT").length;
+        const girlsMealA = dayMealRecords.filter(r => getStudentObj(r.studentId)?.gender === "FEMALE" && r.status === "ABSENT").length;
+        const mealSessionsCount = new Set(dayMealFiltered.map(r => r.activity)).size;
+
+        const dayLabel = isToday ? "Today's Meals" : state.dashDate;
 
         document.getElementById("dashKpiGrid").innerHTML = `
           <div class="kpi">
@@ -1811,20 +2292,32 @@
               <span>Girls: <strong>${girlsActive}</strong></span>
             </div>
           </div>
-         
-         
-         
+          <div class="kpi tint-green">
+            <div class="kpi-label">${esc(dayLabel)} Present</div>
+            <div class="kpi-val text-green">${mealPresent}</div>
+            <div class="kpi-sub">
+              <span>Boys: <strong>${boysMealP}</strong></span>
+              <span>Girls: <strong>${girlsMealP}</strong></span>
+            </div>
+          </div>
+          <div class="kpi tint-red">
+            <div class="kpi-label">${esc(dayLabel)} Absent</div>
+            <div class="kpi-val text-red">${mealAbsent}</div>
+            <div class="kpi-sub">
+              <span>Boys: <strong>${boysMealA}</strong></span>
+              <span>Girls: <strong>${girlsMealA}</strong></span>
+            </div>
           </div>
           <div class="kpi">
-            <div class="kpi-label">Attendance Rate</div>
-            <div class="kpi-val">${pct}%</div>
+            <div class="kpi-label">Meal Attendance Rate</div>
+            <div class="kpi-val">${mealPct}%</div>
             <div class="kpi-sub">
-              <span>Sessions Recorded: <strong>${submittedSessions} / ${state.activities.length}</strong></span>
+              <span>Meals Marked: <strong>${mealSessionsCount} / 3</strong></span>
+              <span>Total Sessions: <strong>${new Set(dayRecords.map(r => r.activity)).size}</strong></span>
             </div>
           </div>
         `;
 
-        // Clickable Activity Cards with Clipart
         document.getElementById("dashActivitiesGrid").innerHTML = state.activities.map(act => {
           const actRecs = dayRecords.filter(r => r.activity === act);
           const p = actRecs.filter(r => r.status === "PRESENT").length;
@@ -1832,15 +2325,19 @@
           const t = p + a;
           const actPct = t > 0 ? Math.round((p / t) * 100) : 0;
           const isSel = state.dashSelectedActivity === act;
+          const isRunning = runningMeal === act;
 
           return `
-            <div class="act-card ${isSel ? "selected" : ""}" role="button" tabindex="0" data-activity="${esc(act)}">
+            <div class="act-card ${isSel ? "selected" : ""} ${isRunning && !isSel ? "running" : ""}" role="button" tabindex="0" data-activity="${esc(act)}">
               <div class="act-head">
                 <div class="act-title-wrap">
                   ${getActivityClipart(act, "clipart-lg")}
-                  <span class="act-title">${esc(act)}</span>
+                  <div>
+                    <div class="act-title">${esc(act)}</div>
+                    ${isRunning ? `<span class="running-now-tag">● Running Now</span>` : ""}
+                  </div>
                 </div>
-                <span class="act-pct">${t > 0 ? `${actPct}%` : "No data"}</span>
+                <span class="act-pct">${t > 0 ? `${actPct}%` : "Waiting"}</span>
               </div>
               <div class="act-bar">
                 <div class="act-bar-fill" style="width:${actPct}%;"></div>
@@ -1854,91 +2351,202 @@
                 </button>
               </div>
               <div class="act-hint">
-                <span>${t} total marked</span>
-                <span>${isSel ? "Viewing list ▼" : "Click to filter →"}</span>
+                <span>${t > 0 ? `${t} marked` : "Not marked yet"}</span>
+                <span>${isSel ? "Selected ▼" : "Click to filter →"}</span>
               </div>
             </div>
           `;
         }).join("");
 
-        renderDashboardActivityDetail();
+        renderDashboardTodayStudentAttendance();
       }
 
-      function getDashDetailFilteredRows() {
-        if (!state.dashSelectedActivity) return { all: [], present: [], absent: [], shown: [] };
-        const q = state.dashDetailSearch.trim().toLowerCase();
-        const base = state.records
-          .filter(r => {
-            if (r.date !== state.dashDate || r.activity !== state.dashSelectedActivity) return false;
-            const st = state.studentMap.get(r.studentId);
-            if (!matchesGender(st?.gender || "UNSPECIFIED", state.dashGender)) return false;
-            const name = (st?.name || r.studentName || "").toLowerCase();
-            if (q && !name.includes(q) && !r.studentId.toLowerCase().includes(q)) return false;
-            return true;
-          })
-          .map(r => {
-            const st = state.studentMap.get(r.studentId);
-            return {
-              studentId: r.studentId,
-              studentName: st?.name || r.studentName || r.studentId,
-              course: st?.course || r.course || "—",
-              gender: st?.gender || "UNSPECIFIED",
-              status: r.status
-            };
-          })
-          .sort((a, b) => a.studentName.localeCompare(b.studentName));
+      function buildDashViewModel() {
+        const dayRecs = state.records.filter(r => r.date === state.dashDate);
+        const recByStudent = new Map();
+        const dayNameByStudent = new Map();
+        const dayCourseByStudent = new Map();
 
-        const present = base.filter(x => x.status === "PRESENT");
-        const absent = base.filter(x => x.status === "ABSENT");
-        const shown = state.dashDetailStatus === "PRESENT" ? present
-          : state.dashDetailStatus === "ABSENT" ? absent : base;
-
-        return { all: base, present, absent, shown };
-      }
-
-      function renderDashboardActivityDetail() {
-        const panel = document.getElementById("dashActivityDetailPanel");
-        if (!state.dashSelectedActivity) {
-          panel.classList.remove("open");
-          return;
+        for (const r of dayRecs) {
+          if (!recByStudent.has(r.studentId)) recByStudent.set(r.studentId, {});
+          recByStudent.get(r.studentId)[r.activity] = r.status;
+          if (r.studentName && r.studentName !== r.studentId) dayNameByStudent.set(r.studentId, r.studentName);
+          if (r.course) dayCourseByStudent.set(r.studentId, r.course);
         }
-        panel.classList.add("open");
 
-        const { all, present, absent, shown } = getDashDetailFilteredRows();
+        const studentIds = new Set();
+        for (const s of state.students) {
+          if (s.isActive && isEligibleOnDate(s, state.dashDate)) studentIds.add(s.studentId);
+        }
+        for (const r of dayRecs) studentIds.add(r.studentId);
+
+        const q = state.dashDetailSearch.trim().toLowerCase();
+        const rows = [];
+        for (const sid of studentIds) {
+          const st = getStudentObj(sid);
+          const gender = st?.gender || "UNSPECIFIED";
+          if (!matchesGender(gender, state.dashGender)) continue;
+          const name = resolveStudentName(sid, dayNameByStudent.get(sid) || "");
+          const course = st?.course || dayCourseByStudent.get(sid) || "—";
+          if (q && !name.toLowerCase().includes(q) && !sid.toLowerCase().includes(q)) continue;
+
+          rows.push({
+            studentId: sid,
+            studentName: name,
+            course,
+            gender,
+            actMap: recByStudent.get(sid) || {}
+          });
+        }
+
+        rows.sort((a, b) => a.studentName.localeCompare(b.studentName));
+
+        if (state.dashSelectedActivity) {
+          const act = state.dashSelectedActivity;
+          const presentRows = rows.filter(r => r.actMap[act] === "PRESENT");
+          const absentRows = rows.filter(r => r.actMap[act] === "ABSENT");
+          const pendingRows = rows.filter(r => !r.actMap[act]);
+          const markedRows = rows.filter(r => r.actMap[act] === "PRESENT" || r.actMap[act] === "ABSENT");
+          const shown = state.dashDetailStatus === "PRESENT" ? presentRows
+            : state.dashDetailStatus === "ABSENT" ? absentRows
+            : state.dashDetailStatus === "PENDING" ? pendingRows
+            : (markedRows.length > 0 ? markedRows : rows);
+          return { mode: "single", act, rows, presentRows, absentRows, pendingRows, markedRows, shown, hasAnyDayRecords: dayRecs.length > 0 };
+        } else {
+          const presentRows = rows.filter(r => MEAL_ACTIVITIES.some(m => r.actMap[m] === "PRESENT"));
+          const absentRows = rows.filter(r => MEAL_ACTIVITIES.some(m => r.actMap[m] === "ABSENT"));
+          const pendingRows = rows.filter(r => MEAL_ACTIVITIES.every(m => !r.actMap[m]));
+          const shown = state.dashDetailStatus === "PRESENT" ? presentRows
+            : state.dashDetailStatus === "ABSENT" ? absentRows
+            : state.dashDetailStatus === "PENDING" ? pendingRows
+            : rows;
+          return { mode: "all", act: null, rows, presentRows, absentRows, pendingRows, markedRows: rows, shown, hasAnyDayRecords: dayRecs.length > 0 };
+        }
+      }
+
+      function renderDashboardTodayStudentAttendance() {
+        const panel = document.getElementById("dashTodayStudentPanel");
+        const backBtn = document.getElementById("dashShowAllMealsBtn");
+        const noDataNote = document.getElementById("dashNoDataNote");
+        const isToday = state.dashDate === todayIso();
         const genderLabel = state.dashGender === "MALE" ? "Boys" : state.dashGender === "FEMALE" ? "Girls" : "All Students";
 
-        document.getElementById("dashDetailTitle").innerHTML =
-          `${getActivityClipart(state.dashSelectedActivity, "clipart-md")} <span>${esc(state.dashSelectedActivity)} — Attendance List</span>`;
-        document.getElementById("dashDetailSub").textContent =
-          `Date: ${state.dashDate} • Filter: ${genderLabel} • Showing ${shown.length} of ${all.length} students`;
+        const vm = buildDashViewModel();
+
+        if (!vm.hasAnyDayRecords && state.records.length > 0) {
+          const latest = getLatestSheetDate();
+          document.getElementById("dashNoDataText").textContent =
+            `No attendance submitted yet for ${isToday ? "Today (" + state.dashDate + ")" : state.dashDate}. Live auto-sync checks every 10s (latest sheet record: ${latest}).`;
+          noDataNote.classList.remove("hidden");
+        } else {
+          noDataNote.classList.add("hidden");
+        }
 
         const allBtn = document.getElementById("dashStatusAllBtn");
         const pBtn = document.getElementById("dashStatusPresentBtn");
         const aBtn = document.getElementById("dashStatusAbsentBtn");
-        allBtn.textContent = `All (${all.length})`;
-        pBtn.textContent = `Present (${present.length})`;
-        aBtn.textContent = `Absent (${absent.length})`;
-        allBtn.className = "pill" + (state.dashDetailStatus === "ALL" ? " active" : "");
-        pBtn.className = "pill" + (state.dashDetailStatus === "PRESENT" ? " active-green" : "");
-        aBtn.className = "pill" + (state.dashDetailStatus === "ABSENT" ? " active-red" : "");
-
+        const uBtn = document.getElementById("dashStatusPendingBtn");
+        const thead = document.getElementById("dashDetailHead");
         const tbody = document.getElementById("dashDetailBody");
-        if (!shown.length) {
-          const word = state.dashDetailStatus === "ALL" ? "" : `${state.dashDetailStatus.toLowerCase()} `;
-          tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--muted);">No ${word}students found for ${esc(state.dashSelectedActivity)} on ${esc(state.dashDate)}.</td></tr>`;
-          return;
-        }
 
-        tbody.innerHTML = shown.map((row, idx) => `
-          <tr>
-            <td>${idx + 1}</td>
-            <td><span class="student-name">${esc(row.studentName)}</span></td>
-            <td><span class="student-id">${esc(row.studentId)}</span></td>
-            <td>${esc(row.course)}</td>
-            <td>${genderBadgeHtml(row.gender) || "—"}</td>
-            <td>${statusBadgeHtml(row.status)}</td>
-          </tr>
-        `).join("");
+        if (vm.mode === "single") {
+          const act = vm.act;
+          panel.classList.add("single-focus");
+          backBtn.classList.remove("hidden");
+
+          document.getElementById("dashDetailTitle").innerHTML =
+            `${getActivityClipart(act, "clipart-md")} <span>${esc(act)} — ${isToday ? "Today's" : esc(state.dashDate)} Student Attendance</span>`;
+          document.getElementById("dashDetailSub").textContent =
+            `${formatReadableDate(state.dashDate)} • ${genderLabel} • Present: ${vm.presentRows.length}, Absent: ${vm.absentRows.length}, Not Marked: ${vm.pendingRows.length}`;
+
+          allBtn.textContent = `All Marked (${vm.markedRows.length})`;
+          pBtn.textContent = `Present (${vm.presentRows.length})`;
+          aBtn.textContent = `Absent (${vm.absentRows.length})`;
+          uBtn.textContent = `Not Marked (${vm.pendingRows.length})`;
+
+          allBtn.className = "pill" + (state.dashDetailStatus === "ALL" ? " active" : "");
+          pBtn.className = "pill" + (state.dashDetailStatus === "PRESENT" ? " active-green" : "");
+          aBtn.className = "pill" + (state.dashDetailStatus === "ABSENT" ? " active-red" : "");
+          uBtn.className = "pill" + (state.dashDetailStatus === "PENDING" ? " active-amber" : "");
+
+          thead.innerHTML = `
+            <tr>
+              <th>#</th>
+              <th>Student Name</th>
+              <th>Student ID</th>
+              <th>Course</th>
+              <th>Gender</th>
+              <th>${esc(act)} Status</th>
+            </tr>
+          `;
+
+          if (!vm.shown.length) {
+            tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--muted);">No students match this filter for ${esc(act)} on ${esc(state.dashDate)}.</td></tr>`;
+            return;
+          }
+
+          tbody.innerHTML = vm.shown.map((r, i) => `
+            <tr>
+              <td>${i + 1}</td>
+              <td><span class="student-name">${esc(r.studentName)}</span></td>
+              <td><span class="student-id">${esc(r.studentId)}</span></td>
+              <td>${esc(r.course)}</td>
+              <td>${genderBadgeHtml(r.gender) || "—"}</td>
+              <td>${statusBadgeHtml(r.actMap[act] || "PENDING")}</td>
+            </tr>
+          `).join("");
+        } else {
+          panel.classList.remove("single-focus");
+          backBtn.classList.add("hidden");
+
+          document.getElementById("dashDetailTitle").innerHTML =
+            `${getActivityClipart("Lunch", "clipart-md")} <span>${isToday ? "Today's Running Day Meal" : esc(state.dashDate) + " Meal"} — Student Attendance</span>`;
+          document.getElementById("dashDetailSub").textContent =
+            `${formatReadableDate(state.dashDate)} • ${genderLabel} • Showing ${vm.shown.length} of ${vm.rows.length} students across Breakfast, Lunch & Dinner`;
+
+          allBtn.textContent = `All Students (${vm.rows.length})`;
+          pBtn.textContent = `Meal Present (${vm.presentRows.length})`;
+          aBtn.textContent = `Meal Absent (${vm.absentRows.length})`;
+          uBtn.textContent = `Not Marked (${vm.pendingRows.length})`;
+
+          allBtn.className = "pill" + (state.dashDetailStatus === "ALL" ? " active" : "");
+          pBtn.className = "pill" + (state.dashDetailStatus === "PRESENT" ? " active-green" : "");
+          aBtn.className = "pill" + (state.dashDetailStatus === "ABSENT" ? " active-red" : "");
+          uBtn.className = "pill" + (state.dashDetailStatus === "PENDING" ? " active-amber" : "");
+
+          thead.innerHTML = `
+            <tr>
+              <th>#</th>
+              <th>Student Name</th>
+              <th>ID</th>
+              <th>Gender</th>
+              <th><span style="display:inline-flex;align-items:center;gap:5px;">${getActivityClipart("Breakfast", "clipart-sm")} Breakfast</span></th>
+              <th><span style="display:inline-flex;align-items:center;gap:5px;">${getActivityClipart("Lunch", "clipart-sm")} Lunch</span></th>
+              <th><span style="display:inline-flex;align-items:center;gap:5px;">${getActivityClipart("Dinner", "clipart-sm")} Dinner</span></th>
+              <th><span style="display:inline-flex;align-items:center;gap:5px;">${getActivityClipart("Meditation", "clipart-sm")} Meditation</span></th>
+              <th><span style="display:inline-flex;align-items:center;gap:5px;">${getActivityClipart("Yoga", "clipart-sm")} Yoga</span></th>
+            </tr>
+          `;
+
+          if (!vm.shown.length) {
+            tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;padding:24px;color:var(--muted);">No students match the selected filter.</td></tr>`;
+            return;
+          }
+
+          tbody.innerHTML = vm.shown.map((r, i) => `
+            <tr>
+              <td>${i + 1}</td>
+              <td><span class="student-name">${esc(r.studentName)}</span></td>
+              <td><span class="student-id">${esc(r.studentId)}</span></td>
+              <td>${genderBadgeHtml(r.gender) || "—"}</td>
+              <td>${statusBadgeHtml(r.actMap["Breakfast"] || "PENDING")}</td>
+              <td>${statusBadgeHtml(r.actMap["Lunch"] || "PENDING")}</td>
+              <td>${statusBadgeHtml(r.actMap["Dinner"] || "PENDING")}</td>
+              <td>${statusBadgeHtml(r.actMap["Meditation"] || "PENDING")}</td>
+              <td>${statusBadgeHtml(r.actMap["Yoga"] || "PENDING")}</td>
+            </tr>
+          `).join("");
+        }
       }
 
       /* ==================== RENDER: REPORTS (PREVIOUS STYLE) ==================== */
@@ -1961,6 +2569,46 @@
         sumSel.value = state.repSumActivity;
       }
 
+      function computeDayReport() {
+        const q = state.repDaySearch.trim().toLowerCase();
+        const sessionRecs = state.records.filter(r => r.date === state.repDayDate && r.activity === state.repDayActivity);
+
+        const searchCourseFiltered = sessionRecs.filter(r => {
+          const st = getStudentObj(r.studentId);
+          const course = st?.course || r.course || "";
+          const name = resolveStudentName(r.studentId, r.studentName).toLowerCase();
+          if (state.repDayCourse !== "ALL" && course.toLowerCase() !== state.repDayCourse.toLowerCase()) return false;
+          if (q && !name.includes(q) && !r.studentId.toLowerCase().includes(q)) return false;
+          return true;
+        });
+
+        const boysP = searchCourseFiltered.filter(r => getStudentObj(r.studentId)?.gender === "MALE" && r.status === "PRESENT").length;
+        const boysA = searchCourseFiltered.filter(r => getStudentObj(r.studentId)?.gender === "MALE" && r.status === "ABSENT").length;
+        const girlsP = searchCourseFiltered.filter(r => getStudentObj(r.studentId)?.gender === "FEMALE" && r.status === "PRESENT").length;
+        const girlsA = searchCourseFiltered.filter(r => getStudentObj(r.studentId)?.gender === "FEMALE" && r.status === "ABSENT").length;
+
+        const genderFiltered = searchCourseFiltered
+          .filter(r => matchesGender(getStudentObj(r.studentId)?.gender || "UNSPECIFIED", state.repDayGender))
+          .map(r => {
+            const st = getStudentObj(r.studentId);
+            return {
+              studentId: r.studentId,
+              studentName: resolveStudentName(r.studentId, r.studentName),
+              course: st?.course || r.course || "—",
+              gender: st?.gender || "UNSPECIFIED",
+              status: r.status
+            };
+          })
+          .sort((a, b) => a.studentName.localeCompare(b.studentName));
+
+        const presentRows = genderFiltered.filter(x => x.status === "PRESENT");
+        const absentRows = genderFiltered.filter(x => x.status === "ABSENT");
+        const exportRows = state.repDayStatus === "PRESENT" ? presentRows
+          : state.repDayStatus === "ABSENT" ? absentRows : [...presentRows, ...absentRows];
+
+        return { sessionRecs, presentRows, absentRows, exportRows, boysP, boysA, girlsP, girlsA };
+      }
+
       function renderDayReport() {
         document.getElementById("repDayDate").value = state.repDayDate;
         document.getElementById("repDayActIcon").innerHTML = getActivityClipart(state.repDayActivity, "clipart-md");
@@ -1975,43 +2623,10 @@
         if (state.repDayCourse !== "ALL" && !courses.includes(state.repDayCourse)) state.repDayCourse = "ALL";
         courseSel.value = state.repDayCourse;
 
-        const q = state.repDaySearch.trim().toLowerCase();
-        const sessionRecs = state.records.filter(r => r.date === state.repDayDate && r.activity === state.repDayActivity);
-
-        const searchCourseFiltered = sessionRecs.filter(r => {
-          const st = state.studentMap.get(r.studentId);
-          const course = st?.course || r.course || "";
-          const name = (st?.name || r.studentName || "").toLowerCase();
-          if (state.repDayCourse !== "ALL" && course.toLowerCase() !== state.repDayCourse.toLowerCase()) return false;
-          if (q && !name.includes(q) && !r.studentId.toLowerCase().includes(q)) return false;
-          return true;
-        });
-
-        const boysP = searchCourseFiltered.filter(r => state.studentMap.get(r.studentId)?.gender === "MALE" && r.status === "PRESENT").length;
-        const boysA = searchCourseFiltered.filter(r => state.studentMap.get(r.studentId)?.gender === "MALE" && r.status === "ABSENT").length;
-        const girlsP = searchCourseFiltered.filter(r => state.studentMap.get(r.studentId)?.gender === "FEMALE" && r.status === "PRESENT").length;
-        const girlsA = searchCourseFiltered.filter(r => state.studentMap.get(r.studentId)?.gender === "FEMALE" && r.status === "ABSENT").length;
-
-        const genderFiltered = searchCourseFiltered
-          .filter(r => matchesGender(state.studentMap.get(r.studentId)?.gender || "UNSPECIFIED", state.repDayGender))
-          .map(r => {
-            const st = state.studentMap.get(r.studentId);
-            return {
-              studentId: r.studentId,
-              studentName: st?.name || r.studentName || r.studentId,
-              course: st?.course || r.course || "—",
-              gender: st?.gender || "UNSPECIFIED",
-              status: r.status
-            };
-          })
-          .sort((a, b) => a.studentName.localeCompare(b.studentName));
-
-        const presentRows = genderFiltered.filter(x => x.status === "PRESENT");
-        const absentRows = genderFiltered.filter(x => x.status === "ABSENT");
+        const { sessionRecs, presentRows, absentRows, boysP, boysA, girlsP, girlsA } = computeDayReport();
         const total = presentRows.length + absentRows.length;
         const pct = total > 0 ? ((presentRows.length / total) * 100).toFixed(1) : "0.0";
 
-        // Update chip counts & active styling
         const allChip = document.getElementById("repDayAllChip");
         const pChip = document.getElementById("repDayPresentChip");
         const aChip = document.getElementById("repDayAbsentChip");
@@ -2102,15 +2717,15 @@
         const validAllGender = state.records.filter(r => {
           if (r.activity !== state.repMonthActivity) return false;
           if (!r.date.startsWith(ym + "-")) return false;
-          return isEligibleOnDate(state.studentMap.get(r.studentId), r.date);
+          return isEligibleOnDate(getStudentObj(r.studentId), r.date);
         });
 
-        const boysP = validAllGender.filter(r => state.studentMap.get(r.studentId)?.gender === "MALE" && r.status === "PRESENT").length;
-        const boysA = validAllGender.filter(r => state.studentMap.get(r.studentId)?.gender === "MALE" && r.status === "ABSENT").length;
-        const girlsP = validAllGender.filter(r => state.studentMap.get(r.studentId)?.gender === "FEMALE" && r.status === "PRESENT").length;
-        const girlsA = validAllGender.filter(r => state.studentMap.get(r.studentId)?.gender === "FEMALE" && r.status === "ABSENT").length;
+        const boysP = validAllGender.filter(r => getStudentObj(r.studentId)?.gender === "MALE" && r.status === "PRESENT").length;
+        const boysA = validAllGender.filter(r => getStudentObj(r.studentId)?.gender === "MALE" && r.status === "ABSENT").length;
+        const girlsP = validAllGender.filter(r => getStudentObj(r.studentId)?.gender === "FEMALE" && r.status === "PRESENT").length;
+        const girlsA = validAllGender.filter(r => getStudentObj(r.studentId)?.gender === "FEMALE" && r.status === "ABSENT").length;
 
-        const genderRecs = validAllGender.filter(r => matchesGender(state.studentMap.get(r.studentId)?.gender || "UNSPECIFIED", state.repMonthGender));
+        const genderRecs = validAllGender.filter(r => matchesGender(getStudentObj(r.studentId)?.gender || "UNSPECIFIED", state.repMonthGender));
         const byStudent = new Map();
         for (const r of genderRecs) {
           if (!byStudent.has(r.studentId)) byStudent.set(r.studentId, []);
@@ -2119,14 +2734,14 @@
 
         const allSummaries = [];
         for (const [sid, list] of byStudent.entries()) {
-          const st = state.studentMap.get(sid);
+          const st = getStudentObj(sid);
           const present = list.filter(x => x.status === "PRESENT").length;
           const absent = list.filter(x => x.status === "ABSENT").length;
           const sessions = present + absent;
           if (!sessions) continue;
           allSummaries.push({
             studentId: sid,
-            studentName: st?.name || list[0].studentName || sid,
+            studentName: resolveStudentName(sid, list[0].studentName),
             course: st?.course || list[0].course || "—",
             gender: st?.gender || "UNSPECIFIED",
             sessions,
@@ -2233,14 +2848,11 @@
         `).join("");
       }
 
-      function renderSummaryReport() {
-        document.getElementById("repSumDate").value = state.repSumDate;
-
+      function computeSummaryRows() {
         const filtered = state.records.filter(r => {
           if (state.repSumDate && r.date !== state.repSumDate) return false;
           if (state.repSumActivity !== "ALL" && r.activity !== state.repSumActivity) return false;
-          const g = state.studentMap.get(r.studentId)?.gender || "UNSPECIFIED";
-          return matchesGender(g, state.repSumGender);
+          return matchesGender(getStudentObj(r.studentId)?.gender || "UNSPECIFIED", state.repSumGender);
         });
 
         const grouped = new Map();
@@ -2251,10 +2863,15 @@
           if (r.status === "PRESENT") entry.present++; else entry.absent++;
         }
 
-        const rows = Array.from(grouped.values()).sort((a, b) => {
+        return Array.from(grouped.values()).sort((a, b) => {
           if (a.date !== b.date) return b.date.localeCompare(a.date);
           return activitySortIndex(a.activity) - activitySortIndex(b.activity) || a.activity.localeCompare(b.activity);
         });
+      }
+
+      function renderSummaryReport() {
+        document.getElementById("repSumDate").value = state.repSumDate;
+        const rows = computeSummaryRows();
 
         const totP = rows.reduce((s, x) => s + x.present, 0);
         const totA = rows.reduce((s, x) => s + x.absent, 0);
@@ -2289,8 +2906,8 @@
       }
 
       function openStudentHistoryModal(studentId) {
-        const st = state.studentMap.get(studentId);
-        const name = st?.name || studentId;
+        const st = getStudentObj(studentId);
+        const name = resolveStudentName(studentId);
         const items = state.records
           .filter(r => r.studentId === studentId && r.date.startsWith(state.repMonth + "-") && r.activity === state.repMonthActivity && isEligibleOnDate(st, r.date))
           .sort((a, b) => a.date.localeCompare(b.date));
@@ -2322,17 +2939,84 @@
         updateDiagUI();
       }
 
-      /* ==================== CSV EXPORT ==================== */
-      function downloadCsv(filename, headers, rows) {
-        const csvCell = v => `"${String(v ?? "").replace(/"/g, '""')}"`;
-        const lines = [headers.map(csvCell).join(",")];
-        for (const r of rows) lines.push(r.map(csvCell).join(","));
-        const blob = new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8;" });
-        const link = document.createElement("a");
-        link.href = URL.createObjectURL(blob);
-        link.download = filename;
-        link.click();
-        URL.revokeObjectURL(link.href);
+      /* ==================== EXPORT PAYLOAD BUILDERS (GUARANTEED STUDENT NAME) ==================== */
+      function getDashExportPayload() {
+        const vm = buildDashViewModel();
+        if (vm.mode === "single") {
+          const act = vm.act;
+          return {
+            filename: `${act}_${state.dashDate}_${state.dashDetailStatus}`,
+            sheetName: `${act} ${state.dashDate}`,
+            headers: ["Sr No", "Student Name", "Student ID", "Course", "Gender", "Date", `${act} Status`],
+            rows: vm.shown.map((r, i) => [
+              i + 1,
+              r.studentName,
+              r.studentId,
+              r.course === "—" ? "" : r.course,
+              genderLabelText(r.gender),
+              state.dashDate,
+              statusPlainText(r.actMap[act])
+            ])
+          };
+        } else {
+          return {
+            filename: `TodayMeals_${state.dashDate}`,
+            sheetName: `Meals ${state.dashDate}`,
+            headers: ["Sr No", "Student Name", "Student ID", "Course", "Gender", "Date", "Breakfast", "Lunch", "Dinner", "Meditation", "Yoga"],
+            rows: vm.shown.map((r, i) => [
+              i + 1,
+              r.studentName,
+              r.studentId,
+              r.course === "—" ? "" : r.course,
+              genderLabelText(r.gender),
+              state.dashDate,
+              statusPlainText(r.actMap["Breakfast"]),
+              statusPlainText(r.actMap["Lunch"]),
+              statusPlainText(r.actMap["Dinner"]),
+              statusPlainText(r.actMap["Meditation"]),
+              statusPlainText(r.actMap["Yoga"])
+            ])
+          };
+        }
+      }
+
+      function getDayReportExportPayload() {
+        const { exportRows } = computeDayReport();
+        return {
+          filename: `DayReport_${state.repDayActivity}_${state.repDayDate}`,
+          sheetName: `${state.repDayActivity} ${state.repDayDate}`,
+          headers: ["Sr No", "Student Name", "Student ID", "Course", "Gender", "Date", "Activity", "Status"],
+          rows: exportRows.map((r, i) => [
+            i + 1,
+            r.studentName,
+            r.studentId,
+            r.course === "—" ? "" : r.course,
+            genderLabelText(r.gender),
+            state.repDayDate,
+            state.repDayActivity,
+            statusPlainText(r.status)
+          ])
+        };
+      }
+
+      function getMonthReportExportPayload() {
+        const { filtered } = computeMonthReport();
+        return {
+          filename: `MonthReport_${state.repMonthActivity}_${state.repMonth}`,
+          sheetName: `${state.repMonthActivity} ${state.repMonth}`,
+          headers: ["Sr No", "Student Name", "Student ID", "Course", "Gender", "Total Sessions", "Present", "Absent", "Attendance %"],
+          rows: filtered.map((r, i) => [
+            i + 1,
+            r.studentName,
+            r.studentId,
+            r.course === "—" ? "" : r.course,
+            genderLabelText(r.gender),
+            r.sessions,
+            r.present,
+            r.absent,
+            `${r.pct.toFixed(1)}%`
+          ])
+        };
       }
 
       /* ==================== UI HELPERS ==================== */
@@ -2403,13 +3087,20 @@
       document.getElementById("dashDate").addEventListener("change", e => {
         if (!e.target.value) return;
         state.dashDate = e.target.value;
-        state.dashDateUserPicked = true;
+        state.dashDateUserPicked = (e.target.value !== todayIso());
         renderDashboard();
       });
 
-      document.getElementById("dashLatestDateBtn").addEventListener("click", () => {
-        state.dashDate = getLatestSheetDate();
+      document.getElementById("dashTodayBtn").addEventListener("click", () => {
+        state.dashDate = todayIso();
         state.dashDateUserPicked = false;
+        renderDashboard();
+        syncFromSheet(false);
+      });
+
+      document.getElementById("dashJumpLatestBtn").addEventListener("click", () => {
+        state.dashDate = getLatestSheetDate();
+        state.dashDateUserPicked = (state.dashDate !== todayIso());
         renderDashboard();
       });
 
@@ -2425,7 +3116,7 @@
           state.dashSelectedActivity = quickChip.getAttribute("data-activity");
           state.dashDetailStatus = quickChip.getAttribute("data-quick-status");
           renderDashboard();
-          document.getElementById("dashActivityDetailPanel").scrollIntoView({ behavior: "smooth", block: "nearest" });
+          document.getElementById("dashTodayStudentPanel").scrollIntoView({ behavior: "smooth", block: "nearest" });
           return;
         }
         const card = e.target.closest(".act-card");
@@ -2433,41 +3124,41 @@
         const act = card.getAttribute("data-activity");
         if (state.dashSelectedActivity === act) {
           state.dashSelectedActivity = null;
+          state.dashDetailStatus = "ALL";
         } else {
           state.dashSelectedActivity = act;
           state.dashDetailStatus = "ALL";
         }
         renderDashboard();
-        if (state.dashSelectedActivity) {
-          document.getElementById("dashActivityDetailPanel").scrollIntoView({ behavior: "smooth", block: "nearest" });
-        }
+        document.getElementById("dashTodayStudentPanel").scrollIntoView({ behavior: "smooth", block: "nearest" });
+      });
+
+      document.getElementById("dashShowAllMealsBtn").addEventListener("click", () => {
+        state.dashSelectedActivity = null;
+        state.dashDetailStatus = "ALL";
+        renderDashboard();
       });
 
       document.getElementById("dashDetailStatusPills").addEventListener("click", e => {
         const btn = e.target.closest("button[data-status]");
         if (!btn) return;
         state.dashDetailStatus = btn.getAttribute("data-status");
-        renderDashboardActivityDetail();
+        renderDashboardTodayStudentAttendance();
       });
 
       document.getElementById("dashDetailSearch").addEventListener("input", e => {
         state.dashDetailSearch = e.target.value;
-        renderDashboardActivityDetail();
+        renderDashboardTodayStudentAttendance();
       });
 
-      document.getElementById("dashDetailCloseBtn").addEventListener("click", () => {
-        state.dashSelectedActivity = null;
-        renderDashboard();
+      document.getElementById("dashDetailExcelBtn").addEventListener("click", () => {
+        const p = getDashExportPayload();
+        downloadExcel(p.filename, p.sheetName, p.headers, p.rows);
       });
 
       document.getElementById("dashDetailCsvBtn").addEventListener("click", () => {
-        if (!state.dashSelectedActivity) return;
-        const { shown } = getDashDetailFilteredRows();
-        downloadCsv(
-          `${state.dashSelectedActivity}_${state.dashDate}_${state.dashDetailStatus}.csv`,
-          ["Student Name", "Student ID", "Course", "Gender", "Status"],
-          shown.map(r => [r.studentName, r.studentId, r.course, r.gender, r.status])
-        );
+        const p = getDashExportPayload();
+        downloadCsv(p.filename, p.headers, p.rows);
       });
 
       // Day Report events
@@ -2507,25 +3198,13 @@
         renderDayReport();
       });
       document.getElementById("repDayPrintBtn").addEventListener("click", () => window.print());
+      document.getElementById("repDayExcelBtn").addEventListener("click", () => {
+        const p = getDayReportExportPayload();
+        downloadExcel(p.filename, p.sheetName, p.headers, p.rows);
+      });
       document.getElementById("repDayCsvBtn").addEventListener("click", () => {
-        const q = state.repDaySearch.trim().toLowerCase();
-        const rows = state.records
-          .filter(r => r.date === state.repDayDate && r.activity === state.repDayActivity)
-          .filter(r => {
-            const st = state.studentMap.get(r.studentId);
-            const course = st?.course || r.course || "";
-            const name = (st?.name || r.studentName || "").toLowerCase();
-            if (!matchesGender(st?.gender || "UNSPECIFIED", state.repDayGender)) return false;
-            if (state.repDayStatus !== "ALL" && r.status !== state.repDayStatus) return false;
-            if (state.repDayCourse !== "ALL" && course.toLowerCase() !== state.repDayCourse.toLowerCase()) return false;
-            if (q && !name.includes(q) && !r.studentId.toLowerCase().includes(q)) return false;
-            return true;
-          })
-          .map(r => {
-            const st = state.studentMap.get(r.studentId);
-            return [r.studentId, st?.name || r.studentName, st?.course || r.course || "", st?.gender || "", r.status];
-          });
-        downloadCsv(`DayReport_${state.repDayActivity}_${state.repDayDate}.csv`, ["Student ID", "Student Name", "Course", "Gender", "Status"], rows);
+        const p = getDayReportExportPayload();
+        downloadCsv(p.filename, p.headers, p.rows);
       });
 
       // Month Report events
@@ -2556,13 +3235,13 @@
         if (row) openStudentHistoryModal(row.getAttribute("data-history-student"));
       });
       document.getElementById("repMonthPrintBtn").addEventListener("click", () => window.print());
+      document.getElementById("repMonthExcelBtn").addEventListener("click", () => {
+        const p = getMonthReportExportPayload();
+        downloadExcel(p.filename, p.sheetName, p.headers, p.rows);
+      });
       document.getElementById("repMonthCsvBtn").addEventListener("click", () => {
-        const { filtered } = computeMonthReport();
-        downloadCsv(
-          `MonthReport_${state.repMonthActivity}_${state.repMonth}.csv`,
-          ["Student ID", "Student Name", "Course", "Gender", "Sessions", "Present", "Absent", "Percentage"],
-          filtered.map(r => [r.studentId, r.studentName, r.course, r.gender, r.sessions, r.present, r.absent, r.pct.toFixed(1) + "%"])
-        );
+        const p = getMonthReportExportPayload();
+        downloadCsv(p.filename, p.headers, p.rows);
       });
 
       // Summary events
@@ -2581,6 +3260,15 @@
       setupPillGroup("repSumGenderPills", "data-gender", g => {
         state.repSumGender = g;
         renderSummaryReport();
+      });
+      document.getElementById("repSumExcelBtn").addEventListener("click", () => {
+        const rows = computeSummaryRows();
+        downloadExcel(
+          `SummaryReport_${todayIso()}`,
+          "Session Summary",
+          ["Sr No", "Date", "Activity", "Present", "Absent", "Total"],
+          rows.map((r, i) => [i + 1, r.date, r.activity, r.present, r.absent, r.present + r.absent])
+        );
       });
       document.getElementById("repSumRows").addEventListener("click", e => {
         const row = e.target.closest("[data-sum-date]");
@@ -2603,7 +3291,7 @@
       document.getElementById("syncNowBtn").addEventListener("click", () => syncFromSheet(true));
       document.getElementById("autoSyncBtn").addEventListener("click", e => {
         state.autoSync = !state.autoSync;
-        e.target.textContent = `Auto-Sync: ${state.autoSync ? "ON" : "OFF"}`;
+        e.target.textContent = `Live Auto-Sync: ${state.autoSync ? "ON" : "OFF"}`;
         restartAutoSync();
       });
 
@@ -2632,9 +3320,14 @@
       document.addEventListener("visibilitychange", () => {
         if (!document.hidden && state.autoSync) syncFromSheet(false);
       });
+      window.addEventListener("focus", () => {
+        if (state.autoSync) syncFromSheet(false);
+      });
 
       /* ==================== INIT ==================== */
       loadCache();
+      updateLiveClock();
+      setInterval(updateLiveClock, 1000);
       renderAll();
       syncFromSheet(false);
       restartAutoSync();
